@@ -1,0 +1,224 @@
+#!/bin/bash
+
+ARCH=$(uname -m)
+echo "[INFO] Systemarchitektur: $ARCH"
+
+while true; do
+  clear
+  echo "===== Rocrail Konfiguration ====="
+  echo "0) Rocrail-Verzeichnisse vorbereiten"
+  echo "1) Rocrail installieren (architekturabhängig)"
+  echo "2) Rocrail starten"
+  echo "3) Rocrail stoppen"
+  echo "4) Rocrail Status anzeigen"
+  echo "5) Rocrail Backup erstellen"
+  echo "6) Rocrail aktualisieren"
+  echo "7) Raspberry Pi OS updaten"
+  echo "8) System neu starten"
+  echo "9) Beenden"
+  echo "10) Rocrail mit Wiki-Demo starten"
+  echo "11) WLAN einrichten"
+  echo "12) Rocrail im Benutzer-Modus starten"
+  echo -n "Auswahl: "
+  read eingabe
+
+  case $eingabe in
+    0)
+      echo "[INFO] Rocrail-Verzeichnisse vorbereiten..."
+      mkdir -p "$HOME/Documents/Rocrail/images"
+      mkdir -p "$HOME/Rocrail/bin"
+      echo "[OK] Verzeichnisse vorbereitet."
+      read -p "Weiter mit Enter..."
+      ;;
+
+    1)
+      echo "[INFO] Rocrail wird installiert..."
+
+      if [ "$ARCH" = "aarch64" ]; then
+        URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
+        echo "[INFO] 64-Bit System erkannt – lade ARM64-Version"
+      else
+        URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
+        echo "[INFO] 32-Bit System erkannt – lade ARMHF-Version"
+      fi
+
+      mkdir -p "$HOME/Downloads/Rocrail"
+      cd "$HOME/Downloads/Rocrail" || exit 1
+      wget "$URL" -O Rocrail.zip
+      unzip -u Rocrail.zip -d "$HOME/Rocrail"
+      chmod +x "$HOME/Rocrail/bin/rocrail"
+
+      if [ -f "$HOME/Rocrail/bin/rocrail" ]; then
+        echo "[OK] Rocrail erfolgreich installiert."
+      else
+        echo "[FEHLER] Rocrail-Installation fehlgeschlagen – Snapshot-Download prüfen."
+      fi
+
+      echo "[INFO] Erzeuge/überschreibe Startskript: ~/Rocrail/startrocrail.sh ..."
+      cat > "$HOME/Rocrail/startrocrail.sh" <<'EOF'
+#!/bin/sh
+Arbeitsbereich=$HOME/Documents/Rocrail
+cd $HOME/Rocrail
+nohup $HOME/Rocrail/bin/rocrail -l $HOME/Rocrail/bin -w $Arbeitsbereich -img $Arbeitsbereich/images -f -pwr > /dev/null 2>&1 &
+EOF
+
+      chmod +x "$HOME/Rocrail/startrocrail.sh"
+      ln -sf "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail.sh"
+      echo "[OK] startrocrail.sh wurde überschrieben und verlinkt."
+
+      if ! crontab -l 2>/dev/null | grep -q "@reboot $HOME/Rocrail/startrocrail.sh"; then
+        (crontab -l 2>/dev/null; echo "@reboot $HOME/Rocrail/startrocrail.sh") | crontab -
+        echo "[OK] Autostart-Eintrag in Crontab hinzugefügt."
+      else
+        echo "[INFO] Autostart-Eintrag bereits vorhanden."
+      fi
+
+      echo
+      echo "[HINWEIS] Um Rocrail korrekt im Benutzerordner zu starten, wird jetzt neu gestartet."
+      read -p "Enter drücken zum Neustart..."
+      sudo reboot
+      ;;
+
+    2)
+      Arbeitsverzeichnis="$HOME/Documents/Rocrail"
+      echo "[INFO] Starte Rocrail im Arbeitsverzeichnis: $Arbeitsverzeichnis"
+      nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$Arbeitsverzeichnis" -img "$Arbeitsverzeichnis/images" -f -pwr > /dev/null 2>&1 &
+      echo "[OK] Rocrail gestartet."
+      read -p "Weiter mit Enter..."
+      ;;
+
+    3)
+      echo "[INFO] Rocrail wird gestoppt..."
+      pid=$(pgrep -f "rocrail")
+      if [ -n "$pid" ]; then
+        kill "$pid"
+        echo "[OK] Rocrail wurde beendet (PID: $pid)."
+      else
+        echo "[HINWEIS] Kein laufender Rocrail-Prozess gefunden."
+      fi
+      read -p "Weiter mit Enter..."
+      ;;
+
+    4)
+      if pgrep -f rocrail > /dev/null; then
+        echo "[OK] Rocrail läuft"
+      else
+        echo "[INFO] Rocrail läuft NICHT"
+      fi
+      read -p "Weiter mit Enter..."
+      ;;
+
+    5)
+      echo "[INFO] Rocrail-Backup erstellen"
+      echo -n "[EINGABE] Quellordner [ENTER für ~/Documents/Rocrail]: "
+      read SRC
+      SRC=${SRC:-$HOME/Documents/Rocrail}
+
+      USB_PATH=$(find /media/pi/ -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)
+      if [ -n "$USB_PATH" ]; then
+        echo "[INFO] USB-Stick erkannt: $USB_PATH"
+      else
+        echo "[INFO] Kein USB-Stick erkannt (unter /media/pi/)"
+      fi
+
+      echo -n "[EINGABE] Zielordner [ENTER für ~/Backups"
+      [ -n "$USB_PATH" ] && echo -n ", 'usb' für USB-Stick"
+      echo "]: "
+      read DEST
+
+      if [ "$DEST" = "usb" ] && [ -n "$USB_PATH" ]; then
+        DEST="$USB_PATH"
+      else
+        DEST=${DEST:-$HOME/Backups}
+      fi
+
+      mkdir -p "$DEST"
+      DATE=$(date +'%Y-%m-%d_%H-%M')
+      ZIPFILE="$DEST/rocrail_backup_$DATE.zip"
+
+      echo "[INFO] Backup wird erstellt unter: $ZIPFILE"
+      zip -r "$ZIPFILE" "$SRC"
+      echo "[OK] Backup gespeichert: $ZIPFILE"
+      read -p "Weiter mit Enter..."
+      ;;
+
+    6)
+      echo "[INFO] Starte Update über update1.sh..."
+      if [ -x "$HOME/update1.sh" ]; then
+        "$HOME/update1.sh"
+        echo "[OK] Rocrail wurde aktualisiert."
+      else
+        echo "[FEHLER] update1.sh fehlt oder ist nicht ausführbar!"
+      fi
+      read -p "Weiter mit Enter..."
+      ;;
+
+    7)
+      echo "[INFO] System wird aktualisiert..."
+      sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt clean
+      if [ -f /var/run/reboot-required ]; then
+        echo "[HINWEIS] Ein Neustart ist erforderlich."
+      fi
+      read -p "Weiter mit Enter..."
+      ;;
+
+    8)
+      sudo reboot
+      ;;
+
+    9)
+      break
+      ;;
+
+    10)
+      echo "[INFO] Beende laufende Rocrail-Instanz (falls aktiv)..."
+      pkill -f rocrail
+
+      if [ -d "$HOME/Rocrail/wikidemo" ]; then
+        echo "[INFO] Starte Rocrail mit Wiki-Demo (~/Rocrail/wikidemo)..."
+        nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$HOME/Rocrail/wikidemo" -img "$HOME/Rocrail/wikidemo/images" -f -pwr > /dev/null 2>&1 &
+        echo "[OK] Rocrail wurde mit der Wiki-Demo gestartet."
+      else
+        echo "[FEHLER] Der Ordner ~/Rocrail/wikidemo wurde nicht gefunden!"
+      fi
+      read -p "Weiter mit Enter..."
+      ;;
+
+    11)
+      echo "[INFO] WLAN einrichten..."
+      echo -n "SSID: "
+      read SSID
+      echo -n "Passwort: "
+      read -s PASS
+      echo
+      sudo tee /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null <<EOF
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=DE
+
+network={
+    ssid="$SSID"
+    psk="$PASS"
+}
+EOF
+      sudo wpa_cli -i wlan0 reconfigure
+      echo "[OK] WLAN-Konfiguration übernommen."
+      read -p "Weiter mit Enter..."
+      ;;
+
+    12)
+      echo "[INFO] Beende laufende Rocrail-Instanz (falls aktiv)..."
+      pkill -f rocrail
+
+      echo "[INFO] Starte Rocrail mit Benutzerdaten (~/Documents/Rocrail)..."
+      nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$HOME/Documents/Rocrail" -img "$HOME/Documents/Rocrail/images" -f -pwr > /dev/null 2>&1 &
+      echo "[OK] Rocrail wurde mit Benutzerdaten gestartet."
+      read -p "Weiter mit Enter..."
+      ;;
+
+    *)
+      echo "[FEHLER] Ungültige Eingabe!"
+      read -p "Weiter mit Enter..."
+      ;;
+  esac
+done
