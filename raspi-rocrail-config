@@ -21,19 +21,27 @@ while true; do
   echo "12) Rocrail im Benutzer-Modus starten"
   echo -n "Auswahl: "
   read eingabe
-
   case $eingabe in
+
     0)
-      echo "[INFO] Rocrail-Verzeichnisse vorbereiten..."
+      echo "[INFO] Verzeichnisse werden vorbereitet..."
       mkdir -p "$HOME/Documents/Rocrail/images"
       mkdir -p "$HOME/Rocrail/bin"
-      echo "[OK] Verzeichnisse vorbereitet."
+      echo "[INFO] Erzeuge startrocrail.sh..."
+      cat > "$HOME/Rocrail/startrocrail.sh" <<EOF
+#!/bin/sh
+Arbeitsbereich=\$1
+cd \$HOME/Rocrail
+nohup \$HOME/Rocrail/bin/rocrail -l \$HOME/Rocrail/bin -w \$Arbeitsbereich -img \$Arbeitsbereich/images -f -pwr > /dev/null 2>&1 &
+EOF
+      chmod +x "$HOME/Rocrail/startrocrail.sh"
+      ln -sf "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail.sh"
+      echo "[OK] Verzeichnisse und Startskript eingerichtet."
       read -p "Weiter mit Enter..."
       ;;
-
+    
     1)
       echo "[INFO] Rocrail wird installiert..."
-
       if [ "$ARCH" = "aarch64" ]; then
         URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
         echo "[INFO] 64-Bit System erkannt – lade ARM64-Version"
@@ -48,59 +56,40 @@ while true; do
       unzip -u Rocrail.zip -d "$HOME/Rocrail"
       chmod +x "$HOME/Rocrail/bin/rocrail"
 
-      if [ -f "$HOME/Rocrail/bin/rocrail" ]; then
-        echo "[OK] Rocrail erfolgreich installiert."
-      else
-        echo "[FEHLER] Rocrail-Installation fehlgeschlagen – Snapshot-Download prüfen."
-      fi
-
-      echo "[INFO] Erzeuge/überschreibe Startskript: ~/Rocrail/startrocrail.sh ..."
-      cat > "$HOME/Rocrail/startrocrail.sh" <<'EOF'
-#!/bin/sh
-Arbeitsbereich=$HOME/Documents/Rocrail
-cd $HOME/Rocrail
-nohup $HOME/Rocrail/bin/rocrail -l $HOME/Rocrail/bin -w $Arbeitsbereich -img $Arbeitsbereich/images -f -pwr > /dev/null 2>&1 &
-EOF
-
-      chmod +x "$HOME/Rocrail/startrocrail.sh"
-      ln -sf "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail.sh"
-      echo "[OK] startrocrail.sh wurde überschrieben und verlinkt."
-
-      if ! crontab -l 2>/dev/null | grep -q "@reboot $HOME/Rocrail/startrocrail.sh"; then
-        (crontab -l 2>/dev/null; echo "@reboot $HOME/Rocrail/startrocrail.sh") | crontab -
-        echo "[OK] Autostart-Eintrag in Crontab hinzugefügt."
-      else
-        echo "[INFO] Autostart-Eintrag bereits vorhanden."
-      fi
-
+      echo "[OK] Rocrail erfolgreich installiert."
       echo
-      echo "[HINWEIS] Um Rocrail korrekt im Benutzerordner zu starten, wird jetzt neu gestartet."
-      read -p "Enter drücken zum Neustart..."
+      echo "[HINWEIS] Der Raspberry Pi wird jetzt neu gestartet."
+      echo "[HINWEIS] Die Verbindung zu diesem Fenster (z. B. PuTTY) wird dabei getrennt."
+      echo "[HINWEIS] Bitte nach etwa 1 Minute erneut per SSH verbinden."
+      echo
+      echo "[INFO] Neustart in 10 Sekunden – abbrechbar mit STRG+C..."
+      sleep 10
       sudo reboot
       ;;
 
+    
     2)
-      Arbeitsverzeichnis="$HOME/Documents/Rocrail"
-      echo "[INFO] Starte Rocrail im Arbeitsverzeichnis: $Arbeitsverzeichnis"
-      nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$Arbeitsverzeichnis" -img "$Arbeitsverzeichnis/images" -f -pwr > /dev/null 2>&1 &
+      echo "[INFO] Starte Rocrail im aktuellen Benutzerverzeichnis..."
+      nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$HOME/Documents/Rocrail" -img "$HOME/Documents/Rocrail/images" -f -pwr > /dev/null 2>&1 &
       echo "[OK] Rocrail gestartet."
       read -p "Weiter mit Enter..."
       ;;
 
-    3)
+       3)
       echo "[INFO] Rocrail wird gestoppt..."
-      pid=$(pgrep -f "rocrail")
+      pid=$(pgrep -x rocrail)
       if [ -n "$pid" ]; then
         kill "$pid"
         echo "[OK] Rocrail wurde beendet (PID: $pid)."
       else
-        echo "[HINWEIS] Kein laufender Rocrail-Prozess gefunden."
+        echo "[INFO] Kein laufender Rocrail-Prozess gefunden."
       fi
       read -p "Weiter mit Enter..."
       ;;
 
+
     4)
-      if pgrep -f rocrail > /dev/null; then
+      if pgrep -x rocrail > /dev/null; then
         echo "[OK] Rocrail läuft"
       else
         echo "[INFO] Rocrail läuft NICHT"
@@ -109,77 +98,100 @@ EOF
       ;;
 
     5)
-      echo "[INFO] Rocrail-Backup erstellen"
-      echo -n "[EINGABE] Quellordner [ENTER für ~/Documents/Rocrail]: "
-      read SRC
-      SRC=${SRC:-$HOME/Documents/Rocrail}
+      echo "[INFO] Backup wird erstellt..."
 
-      USB_PATH=$(find /media/pi/ -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)
+      SRC="$HOME/Documents/Rocrail"
+
+      # Standardziel
+      DEST="$HOME/Backups"
+
+      # Prüfen auf eingehängte USB-Sticks unter /media/pi/
+      USB_PATH=$(find /media/pi/* -maxdepth 0 -type d 2>/dev/null | head -n 1)
       if [ -n "$USB_PATH" ]; then
-        echo "[INFO] USB-Stick erkannt: $USB_PATH"
+        DEST="$USB_PATH/Backups"
+        echo "[INFO] USB-Stick erkannt – Sicherung nach: $DEST"
       else
-        echo "[INFO] Kein USB-Stick erkannt (unter /media/pi/)"
+        echo "[INFO] Kein USB-Stick erkannt – Sicherung nach: $DEST"
       fi
 
-      echo -n "[EINGABE] Zielordner [ENTER für ~/Backups"
-      [ -n "$USB_PATH" ] && echo -n ", 'usb' für USB-Stick"
-      echo "]: "
-      read DEST
-
-      if [ "$DEST" = "usb" ] && [ -n "$USB_PATH" ]; then
-        DEST="$USB_PATH"
-      else
-        DEST=${DEST:-$HOME/Backups}
+      # Quelle prüfen
+      if [ ! -d "$SRC" ]; then
+        echo "[FEHLER] Quellordner '$SRC' existiert nicht."
+        read -p "Weiter mit Enter..."
+        continue
       fi
 
       mkdir -p "$DEST"
+
       DATE=$(date +'%Y-%m-%d_%H-%M')
       ZIPFILE="$DEST/rocrail_backup_$DATE.zip"
 
-      echo "[INFO] Backup wird erstellt unter: $ZIPFILE"
-      zip -r "$ZIPFILE" "$SRC"
-      echo "[OK] Backup gespeichert: $ZIPFILE"
+      zip -r "$ZIPFILE" "$SRC" > /dev/null 2>&1
+
+      if [ -f "$ZIPFILE" ]; then
+        echo "[OK] Backup gespeichert: $ZIPFILE"
+      else
+        echo "[FEHLER] Backup fehlgeschlagen!"
+      fi
+
       read -p "Weiter mit Enter..."
       ;;
 
     6)
       echo "[INFO] Starte Update über update1.sh..."
+
+      if pgrep -x rocrail > /dev/null; then
+        echo "[WARNUNG] Rocrail läuft noch!"
+        echo "[HINWEIS] Bitte stoppen Sie Rocrail zuerst über Menüpunkt 3."
+        read -p "Abbruch – Weiter mit Enter..."
+        continue
+      fi
+
       if [ -x "$HOME/update1.sh" ]; then
-        "$HOME/update1.sh"
-        echo "[OK] Rocrail wurde aktualisiert."
+        (
+          bash "$HOME/update1.sh"
+          echo "[INFO] Update fertig."
+        )
       else
         echo "[FEHLER] update1.sh fehlt oder ist nicht ausführbar!"
       fi
+
       read -p "Weiter mit Enter..."
       ;;
-
     7)
       echo "[INFO] System wird aktualisiert..."
       sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt clean
-      if [ -f /var/run/reboot-required ]; then
-        echo "[HINWEIS] Ein Neustart ist erforderlich."
-      fi
+      echo "[OK] Systemupdate abgeschlossen."
       read -p "Weiter mit Enter..."
       ;;
 
     8)
+      echo "[INFO] System wird neu gestartet..."
       sudo reboot
       ;;
 
     9)
+      echo "[INFO] Menü beendet."
+
+      if [ -n "$SSH_TTY" ]; then
+        echo "[HINWEIS] Sie befinden sich jetzt in der Kommandozeile."
+        echo "[HINWEIS] Mit 'exit' oder STRG+D beenden Sie PuTTY."
+        bash --noprofile --norc
+      fi
+
       break
       ;;
-
     10)
-      echo "[INFO] Beende laufende Rocrail-Instanz (falls aktiv)..."
-      pkill -f rocrail
+      if pgrep -x rocrail > /dev/null; then
 
-      if [ -d "$HOME/Rocrail/wikidemo" ]; then
-        echo "[INFO] Starte Rocrail mit Wiki-Demo (~/Rocrail/wikidemo)..."
-        nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$HOME/Rocrail/wikidemo" -img "$HOME/Rocrail/wikidemo/images" -f -pwr > /dev/null 2>&1 &
-        echo "[OK] Rocrail wurde mit der Wiki-Demo gestartet."
+        echo "[WARNUNG] Rocrail läuft bereits – bitte zuerst stoppen (Punkt 3)."
       else
-        echo "[FEHLER] Der Ordner ~/Rocrail/wikidemo wurde nicht gefunden!"
+        echo "[INFO] Rocrail wird im Demo-Modus (wikidemo) gestartet..."
+        DEMO_DIR="$HOME/Rocrail/wikidemo"
+        mkdir -p "$DEMO_DIR/images"
+        cp -n "$HOME/Rocrail/wikidemo/plan.xml" "$DEMO_DIR/" 2>/dev/null
+        "$HOME/Rocrail/startrocrail.sh" "$DEMO_DIR"
+        echo "[OK] Demo-Modus gestartet."
       fi
       read -p "Weiter mit Enter..."
       ;;
@@ -207,12 +219,13 @@ EOF
       ;;
 
     12)
-      echo "[INFO] Beende laufende Rocrail-Instanz (falls aktiv)..."
-      pkill -f rocrail
-
-      echo "[INFO] Starte Rocrail mit Benutzerdaten (~/Documents/Rocrail)..."
-      nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$HOME/Documents/Rocrail" -img "$HOME/Documents/Rocrail/images" -f -pwr > /dev/null 2>&1 &
-      echo "[OK] Rocrail wurde mit Benutzerdaten gestartet."
+      if pgrep -x rocrail > /dev/null; then
+        echo "[WARNUNG] Rocrail läuft bereits – bitte zuerst stoppen (Punkt 3)."
+      else
+        echo "[INFO] Rocrail wird im Benutzer-Modus gestartet..."
+        "$HOME/Rocrail/startrocrail.sh" "$HOME/Documents/Rocrail"
+        echo "[OK] Benutzer-Modus gestartet."
+      fi
       read -p "Weiter mit Enter..."
       ;;
 
