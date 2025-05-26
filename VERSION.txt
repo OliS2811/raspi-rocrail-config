@@ -1,0 +1,12 @@
+Rocrail PiOS - Version 1.2  
+Stand: 2025-05-26 00:00
+
+Diese Version enthält:
+- Vollständiges Terminal-Menü mit 13 Funktionen
+- Architekturabhängige Rocrail-Installation (ARM64/ARMHF)
+- Autostart über Crontab (steuerbar über Menüpunkt 13)
+- Start im Benutzer- oder Demo-Modus
+- Update- und Backup-Funktionen
+- WLAN-Konfiguration und Systempflege
+
+Autor: Oliver S.

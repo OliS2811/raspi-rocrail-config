@@ -20,7 +20,7 @@ mkdir -p ~/Downloads/Rocrail
 cd ~/Downloads/Rocrail || exit 1
 
 # Download und Entpacken
-wget "$SNAPSHOT_URL" -O Rocrail.zip
+wget --no-check-certificate "$SNAPSHOT_URL" -O Rocrail.zip
 unzip -u Rocrail.zip
 
 # Dateien kopieren
