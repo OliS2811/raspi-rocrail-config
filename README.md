@@ -5,7 +5,7 @@ Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer
 
 ---
 
-## 📦 Funktionen (Stand: Version 1.1)
+## 📦 Funktionen (Stand: Version 1.2)
 
 - Vollautomatisiertes Textmenü mit 13 Punkten:
   - Rocrail-Verzeichnisse vorbereiten
