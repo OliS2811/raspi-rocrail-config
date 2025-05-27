@@ -1,6 +1,6 @@
 # 🛤️ raspi-rocrail-config
 
-**Rocrail-Konfigurationsmenü für Raspberry Pi OS Lite ARM64 (v1.1)**  
+**Rocrail-Konfigurationsmenü für Raspberry Pi OS Lite ARM64 (v1.2)**  
 Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer Rocrail-Installation auf dem Raspberry Pi.
 
 ---
