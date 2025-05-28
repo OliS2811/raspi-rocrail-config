@@ -1,103 +1,47 @@
-# 🛤️ raspi-rocrail-config
+# Raspberry Pi Image für raspi-rocrail-config
 
-**Rocrail-Konfigurationsmenü für Raspberry Pi OS Lite ARM64 (v1.2)**  
-Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer Rocrail-Installation auf dem Raspberry Pi.
+Dieses Image basiert auf Raspberry Pi OS (32-Bit, Bookworm Lite) und enthält alle notwendigen Skripte zur Einrichtung und Aktualisierung von Rocrail über ein einfaches Textmenü.
 
----
+📥 [Download Rocrail Pi OS 32bit Image](https://drive.google.com/file/d/1raKf3yVS96Ho3Ij2qg8K4KgrosPUYYO3/view?usp=sharing)
 
-## 📦 Funktionen (Stand: Version 1.2)
 
-- Vollautomatisiertes Textmenü mit 13 Punkten:
-  - Rocrail-Verzeichnisse vorbereiten
-  - Architekturabhängige Installation (ARM64 / ARMHF)
-  - Start/Stopp/Status von Rocrail
-  - Backup mit automatischer USB-Erkennung
-  - Update mit Prozessprüfung
-  - Wiki-Demo starten & zurückwechseln
-  - WLAN konfigurieren
-  - Systemupdate
-  - Systemneustart
-- Unterstützt HDMI & SSH (autostartfähig)
-- Crontab-fähiger Autostart von Rocrail (optional)
+## Inhalt des Images
 
----
+Nach dem ersten Start befinden sich folgende Dateien im Verzeichnis `/home/pi`:
 
-## 🚀 Ersteinrichtung nach neuem Image
+- `raspi-rocrail-config`  
+  → Das Textmenü zur Steuerung und Konfiguration  
+- `update1.sh`  
+  → Automatisiertes Update-Skript für Rocrail  
+- `startrocrail.sh`  
+  → Startet Rocrail nach erfolgreicher Installation  
+- `.bashrc`  
+  → Angepasst, um das Menü automatisch nach dem Login anzuzeigen
 
-> Voraussetzung: Raspberry Pi OS Lite ARM64 (Bookworm)
+> **Hinweis**: Rocrail selbst ist **nicht** vorinstalliert. Die Installation erfolgt über das Menü.
 
-### 🔧 1. Pakete installieren
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install wget unzip zip bash-completion -y
-```
+## Zugangsdaten
 
-### 📁 2. Verzeichnisse vorbereiten
-```bash
-mkdir -p ~/Documents/Rocrail/images
-mkdir -p ~/Rocrail/bin
-mkdir -p ~/Rocrail/wikidemo
-mkdir -p ~/Backups
-```
+- Benutzername: `pi`  
+- Passwort: `rocrail`
 
-### 🧾 3. Skripte kopieren
-- `raspi-rocrail-config` → nach `~/`
-- `update1.sh` → nach `~/`
-- `startrocrail.sh` → nach `~/Rocrail/`
+## WLAN & Sprache
 
-```bash
-chmod +x ~/raspi-rocrail-config ~/update1.sh ~/Rocrail/startrocrail.sh
-```
+- WLAN wird über das Textmenü eingerichtet.
+- Sprache und Tastatur sind auf **Deutsch (de_DE.UTF-8, de)** eingestellt.
+- Zeitzone: **Europe/Berlin**
+
+## Verwendung
+
+1. Image auf SD-Karte schreiben (z. B. mit [Raspberry Pi Imager](https://www.raspberrypi.com/software/))
+2. Raspberry Pi einlegen und starten
+3. Nach dem Login erscheint automatisch das Konfigurationsmenü
+
+## Zielgruppe
+
+Dieses Image richtet sich an Nutzer, die Rocrail auf einem Raspberry Pi betreiben möchten – ohne manuelle Konfigurationen.
 
 ---
 
-### ⚙️ 4. Autostart-Menü aktivieren (`~/.bashrc`)
-
-Ganz unten einfügen:
-```bash
-if [[ $(tty) == /dev/tty1 || -n "$SSH_TTY" ]]; then
-  if [ -f "$HOME/raspi-rocrail-config" ]; then
-    exec bash "$HOME/raspi-rocrail-config"
-  fi
-fi
-```
-
----
-
-## 📜 Menüpunkte (Auszug)
-
-| Nr. | Funktion                           |
-|-----|------------------------------------|
-| 0   | Verzeichnisse vorbereiten          |
-| 1   | Rocrail installieren               |
-| 2   | Rocrail starten                    |
-| 3   | Rocrail stoppen                    |
-| 4   | Rocrail-Status anzeigen            |
-| 5   | Backup inkl. USB-Unterstützung     |
-| 6   | Rocrail-Update mit Prozess-Check   |
-| 10  | Wiki-Demo starten                  |
-| 12  | Rocrail im Benutzer-Modus starten  |
-
----
-
-## 💡 Hinweise
-
-- Nach Punkt 1 wird automatisch neu gestartet
-- Punkt 9 verlässt das Menü sauber und zeigt wieder die Shell (auch bei SSH)
-- Backup schlägt Alarm, wenn Rocrail noch läuft
-- Updates nur möglich bei gestopptem Dienst
-
----
-
-## 🏁 Versionen & Tags
-
-- `v1.1` = erster stabiler, vollständiger Stand  
-- Basierend auf Raspberry Pi OS Lite ARM64 (Bookworm, 64-bit)
-
----
-
-## 📬 Kontakt
-
-Projektleitung: **Oliver S.**  
-Fragen oder Beiträge? Gerne via GitHub Issues oder Pull Requests.
-
+Erstellt am: 28.05.2025  
+Kontakt: [Oliver]
