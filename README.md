@@ -4,6 +4,8 @@
 Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer Rocrail-Installation auf dem Raspberry Pi.
 
 ---
+👉 [Weitere Informationen zum Raspberry Pi Image](image/README.md)
+
 
 ## 📦 Funktionen (Stand: Version 1.2)
 
