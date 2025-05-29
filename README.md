@@ -4,7 +4,14 @@
 Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer Rocrail-Installation auf dem Raspberry Pi.
 
 ---
-👉 [Weitere Informationen zum Raspberry Pi Image](image/README.md)
+👉 [Weitere Informationen zum fertigen Raspberry Pi Image](image/README.md)
+
+
+## 📦 Funktionen (Stand: Version 1.3)
+
+- Samba hinzugefügt
+- Samba Passwort setzen hinzugefügt
+- Default Timzone Europe/Berlin
 
 
 ## 📦 Funktionen (Stand: Version 1.2)
@@ -24,9 +31,9 @@ Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer
 
 ---
 
-## 🚀 Ersteinrichtung nach neuem Image
+## 🚀 Ersteinrichtung auf neuem lite Image
 
-> Voraussetzung: Raspberry Pi OS Lite ARM64 (Bookworm)
+> Voraussetzung: Raspberry Pi OS Lite (Bookworm)
 
 ### 🔧 1. Pakete installieren
 ```bash

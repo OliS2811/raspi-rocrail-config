@@ -20,6 +20,8 @@ while true; do
   echo "11) WLAN einrichten"
   echo "12) Rocrail im Benutzer-Modus starten"
   echo "13) Rocrail Autostart (Crontab) einrichten"
+  echo "14) Samba Freigaben einrichten"
+  echo "15) Samba-Passwort für pi setzen"
   echo -n "Auswahl: "
   read eingabe
   case $eingabe in
@@ -65,6 +67,7 @@ EOF
       echo
       echo "[INFO] Neustart in 10 Sekunden – abbrechbar mit STRG+C..."
       sleep 10
+      sudo timedatectl set-timezone Europe/Berlin
       sudo reboot
       ;;
 
@@ -98,13 +101,12 @@ EOF
       read -p "Weiter mit Enter..."
       ;;
 
-    5)
+        5)
       echo "[INFO] Backup wird erstellt..."
 
       SRC="$HOME/Documents/Rocrail"
-
-      # Standardziel
       DEST="$HOME/Backups"
+      LOGFILE="$DEST/backup.log"
 
       # Prüfen auf eingehängte USB-Sticks unter /media/pi/
       USB_PATH=$(find /media/pi/* -maxdepth 0 -type d 2>/dev/null | head -n 1)
@@ -123,17 +125,23 @@ EOF
       fi
 
       mkdir -p "$DEST"
-
       DATE=$(date +'%Y-%m-%d_%H-%M')
       ZIPFILE="$DEST/rocrail_backup_$DATE.zip"
 
+      echo "[INFO] Sichere nach: $ZIPFILE"
       zip -r "$ZIPFILE" "$SRC" > /dev/null 2>&1
 
       if [ -f "$ZIPFILE" ]; then
         echo "[OK] Backup gespeichert: $ZIPFILE"
+        echo "$(date +'%Y-%m-%d %H:%M') Backup: $ZIPFILE" >> "$LOGFILE"
       else
         echo "[FEHLER] Backup fehlgeschlagen!"
+        echo "$(date +'%Y-%m-%d %H:%M') Fehler beim Backup!" >> "$LOGFILE"
       fi
+
+      # Automatisches Aufräumen alter Backups (älter als 30 Tage)
+      echo "[INFO] Alte Backups (>10 Tage) werden gelöscht..."
+      find "$DEST" -name 'rocrail_backup_*.zip' -mtime +30 -delete
 
       read -p "Weiter mit Enter..."
       ;;
@@ -244,11 +252,65 @@ EOF
       read -p "Weiter mit Enter..."
       ;;
 
+14)
+  echo ""
+  echo -e "\e[1mSamba installieren und konfigurieren …\e[0m"
+  echo ""
+  sudo apt-get update
+  sudo apt-get install -y samba
+  echo ""
+  echo -e "\e[1mKonfiguriere /etc/samba/smb.conf …\e[0m"
+  echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "[Rocrail]" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   path = /home/pi/Rocrail" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   writeable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   only guest = no" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   create mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   directory mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   valid users = pi" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "[Rocrail-Documents]" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   path = /home/pi/Documents/Rocrail" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   writeable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   only guest = no" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   create mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   directory mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   valid users = pi" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "[Rocrail-Images]" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   path = /home/pi/Documents/Rocrail/images" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   writeable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   only guest = no" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   create mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   directory mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo "   valid users = pi" | sudo tee -a /etc/samba/smb.conf > /dev/null
+  echo ""
+  echo -e "\e[1mStarte Samba-Dienst neu …\e[0m"
+  echo ""
+  sudo systemctl restart smbd
+  echo -e "\e[1;32m[SUCCESS] Samba-Freigaben wurden eingerichtet!\e[0m"
+  echo ""
+  ;;
+    15)
+      echo "[INFO] Setze Samba-Passwort für Benutzer 'pi'..."
+      echo "[HINWEIS] Du wirst jetzt nach einem neuen Passwort gefragt."
+      sudo smbpasswd -a pi
+      if [ $? -eq 0 ]; then
+        echo "[OK] Passwort erfolgreich gesetzt."
+      else
+        echo "[FEHLER] Passwort konnte nicht gesetzt werden."
+      fi
+      read -p "Weiter mit Enter..."
+      ;;
 
     *)
       echo "[FEHLER] Ungültige Eingabe!"
       read -p "Weiter mit Enter..."
       ;;
+    
   esac
 done
     
