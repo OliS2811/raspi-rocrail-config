@@ -3,6 +3,9 @@
 Dieses Image basiert auf Raspberry Pi OS (32-Bit, Bookworm Lite) und enthält alle notwendigen Skripte zur Einrichtung und Aktualisierung von Rocrail über ein einfaches Textmenü.
 
 📥 [Download Rocrail Pi OS 32bit Image](https://drive.google.com/file/d/1c9eG69IcQtM3PgGZgWhhHm7IVhwWRMo6/view?usp=sharing)
+
+Dieses Image basiert auf Raspberry Pi OS (64-Bit, Bookworm Lite) und enthält alle notwendigen Skripte zur Einrichtung und Aktualisierung von Rocrail über ein einfaches Textmenü.
+
 📥 [Download Rocrail Pi OS 64bit Image](https://drive.google.com/file/d/17Tol4TQs4fBeN7vMt7iqYYeax3TZWXCL/view?usp=sharing)
 
 ## Inhalt des Images
