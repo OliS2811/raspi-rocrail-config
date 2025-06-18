@@ -1,4 +1,10 @@
 #!/bin/bash
+# WLAN-Status ermitteln
+WLAN_STATUS="kein WLAN verbunden"
+if iw wlan0 link 2>/dev/null | grep -q "Connected to"; then
+  SSID=$(iw wlan0 link | grep SSID | awk -F': ' '{print $2}')
+  WLAN_STATUS="verbunden mit: $SSID"
+fi
 
 ARCH=$(uname -m)
 echo "[INFO] Systemarchitektur: $ARCH"
@@ -6,6 +12,7 @@ echo "[INFO] Systemarchitektur: $ARCH"
 while true; do
   clear
   echo "===== Rocrail Konfiguration ====="
+  echo "Bitte gib die gewünschte Menü-Nummer ein und bestätige mit Enter:"
   echo "0) Rocrail-Verzeichnisse vorbereiten"
   echo "1) Rocrail installieren (architekturabhängig)"
   echo "2) Rocrail starten"
@@ -15,13 +22,14 @@ while true; do
   echo "6) Rocrail aktualisieren"
   echo "7) Raspberry Pi OS updaten"
   echo "8) System neu starten"
-  echo "9) Beenden"
+  echo "9) Dieses Menü Beenden"
   echo "10) Rocrail mit Wiki-Demo starten"
-  echo "11) WLAN einrichten"
+  echo "11) WLAN einrichten ($WLAN_STATUS)"
   echo "12) Rocrail im Benutzer-Modus starten"
   echo "13) Rocrail Autostart (Crontab) einrichten"
   echo "14) Samba Freigaben einrichten"
   echo "15) Samba-Passwort für pi setzen"
+  echo "16) Raspberry herunterfahren"
   echo -n "Auswahl: "
   read eingabe
   case $eingabe in
@@ -30,6 +38,12 @@ while true; do
       echo "[INFO] Verzeichnisse werden vorbereitet..."
       mkdir -p "$HOME/Documents/Rocrail/images"
       mkdir -p "$HOME/Rocrail/bin"
+      # Fix für preload-Fehler auf 64-Bit-Systemen
+      if [ "$(uname -m)" = "aarch64" ] && grep -q 'libarmmem' /etc/ld.so.preload 2>/dev/null; then
+      echo "[INFO] Entferne inkompatiblen preload-Eintrag für 64-Bit..."
+      sudo sed -i 's|.*libarmmem.*|# &|' /etc/ld.so.preload
+fi
+
       echo "[INFO] Erzeuge startrocrail.sh..."
       cat > "$HOME/Rocrail/startrocrail.sh" <<EOF
 #!/bin/sh
@@ -206,27 +220,52 @@ EOF
       ;;
 
     11)
+      if ! ip link show wlan0 > /dev/null 2>&1; then
+        echo "[FEHLER] WLAN-Schnittstelle wlan0 nicht gefunden!"
+        echo "Stelle sicher, dass WLAN verfügbar ist (z. B. Raspberry Pi 3/4/5 oder funktionierender USB-WLAN-Stick)."
+        echo "Weiter mit Enter..."
+        read
+        return
+      fi
+
       echo "[INFO] WLAN einrichten..."
       echo -n "SSID: "
       read SSID
       echo -n "Passwort: "
       read -s PASS
       echo
+
       sudo tee /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null <<EOF
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 country=DE
 
 network={
-    ssid="$SSID"
-    psk="$PASS"
+    ssid=\"$SSID\"
+    psk=\"$PASS\"
 }
 EOF
-      sudo wpa_cli -i wlan0 reconfigure
-      echo "[OK] WLAN-Konfiguration übernommen."
+
+      echo "[INFO] Aktiviere WLAN-Schnittstelle..."
+      sudo ip link set wlan0 up
+
+      echo "[INFO] Starte wpa_supplicant neu..."
+      sudo wpa_cli -i wlan0 reconfigure || echo "[WARNUNG] wpa_cli fehlgeschlagen"
+
+      echo "[INFO] Hole IP-Adresse via DHCP..."
+      sudo dhclient wlan0 || echo "[WARNUNG] DHCP-Zuweisung fehlgeschlagen"
+
+      sleep 2
+      echo "[INFO] Verbindung prüfen..."
+      if iw wlan0 link | grep -q "Connected"; then
+        echo "[OK] WLAN-Verbindung erfolgreich:"
+        iw wlan0 link | grep -E "SSID|signal"
+      else
+        echo "[FEHLER] WLAN-Verbindung nicht hergestellt."
+      fi
+
       read -p "Weiter mit Enter..."
       ;;
-
     12)
       if pgrep -x rocrail > /dev/null; then
         echo "[WARNUNG] Rocrail läuft bereits – bitte zuerst stoppen (Punkt 3)."
@@ -305,6 +344,13 @@ EOF
       fi
       read -p "Weiter mit Enter..."
       ;;
+    16)
+  echo "[INFO] Raspberry wird jetzt heruntergefahren..."
+  echo "[HINWEIS] Das Gerät schaltet sich in wenigen Sekunden ab."
+  echo "[HINWEIS] Du kannst den Strom trennen, sobald die grüne LED aus ist."
+  sleep 10
+  sudo shutdown -h now
+  ;;
 
     *)
       echo "[FEHLER] Ungültige Eingabe!"

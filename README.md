@@ -1,111 +1,97 @@
-# 🛤️ raspi-rocrail-config
+# 📦 Rocrail Raspberry Pi OS Image – Einfach starten, ohne viel Basteln
 
-**Rocrail-Konfigurationsmenü für Raspberry Pi OS Lite (v1.3)**  
-Ein komfortables Terminal-Menü für die Einrichtung, Pflege und Bedienung einer Rocrail-Installation auf dem Raspberry Pi.
-
----
-👉 [Weitere Informationen zum fertigen Raspberry Pi Image und Download](image/README.md)
-
-
-## 📦 Funktionen (Stand: Version 1.3)
-
-- Samba hinzugefügt
-- Samba Passwort setzen hinzugefügt
-- Default Timzone Europe/Berlin
-
-
-## 📦 Funktionen (Stand: Version 1.2)
-
-- Vollautomatisiertes Textmenü mit 13 Punkten:
-  - Rocrail-Verzeichnisse vorbereiten
-  - Architekturabhängige Installation (ARM64 / ARMHF)
-  - Start/Stopp/Status von Rocrail
-  - Backup mit automatischer USB-Erkennung
-  - Update mit Prozessprüfung
-  - Wiki-Demo starten & zurückwechseln
-  - WLAN konfigurieren
-  - Systemupdate
-  - Systemneustart
-- Unterstützt HDMI & SSH (autostartfähig)
-- Crontab-fähiger Autostart von Rocrail (optional)
+Dieses Projekt stellt ein **fertig vorbereitetes Raspberry Pi OS Lite Image** für den Betrieb von **Rocrail** bereit.  
+Ziel ist es, die Einrichtung so einfach wie möglich zu machen – ohne manuelle Paketinstallation, Konfiguration oder Linux-Kenntnisse.
 
 ---
 
-## 🚀 Ersteinrichtung auf neuem lite Image
+## ✅ Was macht das Image?
 
-> Voraussetzung: Raspberry Pi OS Lite (Bookworm)
+- **Raspberry Pi OS Lite (Bookworm)** – kompakt, ohne Desktop
+- **Startet beim ersten Boot direkt ins Setup-Menü (Punkt 0)** zur Ersteinrichtung
+- Automatische Installation des **Rocrail-Servers** (je nach Pi 32 oder 64 Bit)
+- Ein Terminal-Menü führt durch alle wichtigen Einstellungen:
+  - 🛠️ **Punkt 0: Ersteinrichtung** – Rocrail, WLAN, Benutzer, Samba usw.
+  - 🚂 **Punkt 1: Rocrail installieren**
+  - 📡 **Punkt 11: WLAN einrichten**
+  - 💾 **Punkt 8: Backup erstellen**, **Punkt 7: Wiederherstellen**
+  - 🔧 **Punkt 13: Raspberry Pi OS aktualisieren**
+  - ⏻ **Punkt 16: Herunterfahren mit Bestätigung**
+- Unterstützt **32-Bit & 64-Bit Architektur** (automatische Erkennung)
 
-### 🔧 1. Pakete installieren
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install wget unzip zip bash-completion -y
-```
+---
 
-### 📁 2. Verzeichnisse vorbereiten
-```bash
-mkdir -p ~/Documents/Rocrail/images
-mkdir -p ~/Rocrail/bin
-mkdir -p ~/Rocrail/wikidemo
-mkdir -p ~/Backups
-```
+## 💡 Zielgruppe
 
-### 🧾 3. Skripte kopieren
-- `raspi-rocrail-config` → nach `~/`
-- `update1.sh` → nach `~/`
-- `startrocrail.sh` → nach `~/Rocrail/`
+- Modellbahner, die **Rocrail auf einem Raspberry Pi als reinen Server** nutzen möchten
+- Keine grafische Oberfläche – Rocview läuft wie gewohnt auf einem separaten PC/Mac
+- Kein Eingriff in zentrale Rocrail-Konfigurationen (jede Anlage ist anders)
+- Ideal für Nutzer, die keine Zeit oder Lust auf manuelle Installation haben
+
+---
+
+## 📥 Installation
+
+1. Lade das passende `.img.xz`-File herunter (32bit oder 64bit)
+2. Schreibe das Image auf eine SD-Karte (z. B. mit [Raspberry Pi Imager](https://www.raspberrypi.com/software/))
+3. Starte den Pi – das Menü erscheint automatisch
+4. Wähle **Punkt 0 „Ersteinrichtung“** – der Rest wird erledigt
+
+---
+
+## 🔄 Menü aktualisieren (Git-Pull)
+
+Nach dem Flashen brauchst du das Image [b]nicht neu schreiben[/b], wenn sich z. B. das Menü geändert hat.
+
+Du kannst jederzeit das aktualisierte Menü nachladen:
 
 ```bash
-chmod +x ~/raspi-rocrail-config ~/update1.sh ~/Rocrail/startrocrail.sh
+cd ~
+git clone https://github.com/OliS2811/raspi-rocrail-config.git
+cp raspi-rocrail-config/raspi-rocrail-config ~/
+chmod +x ~/raspi-rocrail-config
 ```
 
----
-
-### ⚙️ 4. Autostart-Menü aktivieren (`~/.bashrc`)
-
-Ganz unten einfügen:
-```bash
-if [[ $(tty) == /dev/tty1 || -n "$SSH_TTY" ]]; then
-  if [ -f "$HOME/raspi-rocrail-config" ]; then
-    exec bash "$HOME/raspi-rocrail-config"
-  fi
-fi
-```
+Fertig! Beim nächsten Login erscheint automatisch das neue Menü.
 
 ---
 
-## 📜 Menüpunkte (Auszug)
+## 🖥️ Verbindung zu Rocview (Client-PC)
 
-| Nr. | Funktion                           |
-|-----|------------------------------------|
-| 0   | Verzeichnisse vorbereiten          |
-| 1   | Rocrail installieren               |
-| 2   | Rocrail starten                    |
-| 3   | Rocrail stoppen                    |
-| 4   | Rocrail-Status anzeigen            |
-| 5   | Backup inkl. USB-Unterstützung     |
-| 6   | Rocrail-Update mit Prozess-Check   |
-| 10  | Wiki-Demo starten                  |
-| 12  | Rocrail im Benutzer-Modus starten  |
+Der Raspberry Pi läuft als **reiner Rocrail-Server**. Die Bedienung erfolgt mit [Rocview](https://wiki.rocrail.net/doku.php?id=rocview-de) auf deinem PC, Mac oder Tablet.
+
+💬 Mit Hilfe des [Stummiforums](https://www.stummiforum.de/) oder des [offiziellen Rocrail-Forums](https://forum.rocrail.net/) gelingt die Verbindung zum Server problemlos – auch für Einsteiger.
 
 ---
 
-## 💡 Hinweise
+## 📸 Vorschau
 
-- Nach Punkt 1 wird automatisch neu gestartet
-- Punkt 9 verlässt das Menü sauber und zeigt wieder die Shell (auch bei SSH)
-- Backup schlägt Alarm, wenn Rocrail noch läuft
-- Updates nur möglich bei gestopptem Dienst
+![Menü](screenshots/menu.png)
 
 ---
 
-## 🏁 Versionen & Tags
+## 🧩 Kompatibilität
 
-- `v1.1` = erster stabiler, vollständiger Stand  
-- Basierend auf Raspberry Pi OS Lite ARM64 (Bookworm, 64-bit)
+- Raspberry Pi 3B / 3B+ / 4 / 5
+- Unterstützt 32-Bit **und** 64-Bit
+- WLAN, SSH und Autologin vorkonfiguriert
 
 ---
 
-## 📬 Kontakt
+## 📌 Hinweise
 
-Projektleitung: **Oliver S.**  
-Fragen oder Beiträge? Gerne via GitHub Issues oder Pull Requests.
+- **Das Image richtet sich an fortgeschrittene Nutzer, die mit einem Terminal-Menü arbeiten können.**
+- Eine grafische Oberfläche (Desktop) ist **nicht enthalten** – das Menü läuft direkt im Terminal.
+- WLAN muss bei älteren Pis oder bestimmten USB-Sticks ggf. manuell aktiviert werden (siehe Menüpunkt 11).
+
+---
+
+## 🙌 Dank an die Community
+
+Ein herzliches Danke an alle aus dem **Stummiforum** und dem **Rocrail-Forum**, insbesondere [b]Piraten Kapitän[/b], für das wertvolle Feedback und die Ideen zur Verbesserung des Images!
+
+---
+
+## 🔗 Projektseite
+
+👉 [https://github.com/OliS2811/raspi-rocrail-config](https://github.com/OliS2811/raspi-rocrail-config)

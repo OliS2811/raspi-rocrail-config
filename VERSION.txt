@@ -10,3 +10,10 @@ Diese Version enthält:
 - WLAN-Konfiguration und Systempflege
 
 Autor: Oliver S.
+
+Funktionen (Stand: Version 1.3)
+
+- Samba hinzugefügt
+- Samba Passwort setzen hinzugefügt
+- Default Timzone Europe/Berlin
+Autor: Oliver S.
