@@ -88,7 +88,7 @@ Der Raspberry Pi läuft als **reiner Rocrail-Server**. Die Bedienung erfolgt mit
 
 ## 🙌 Dank an die Community
 
-Ein herzliches Danke an alle aus dem **Stummiforum** und dem **Rocrail-Forum**, insbesondere [b]Piraten Kapitän[/b], für das wertvolle Feedback und die Ideen zur Verbesserung des Images!
+Ein herzliches Danke an alle aus dem **Stummiforum** und dem **Rocrail-Forum**, für das wertvolle Feedback und die Ideen zur Verbesserung des Images!
 
 ---
 
