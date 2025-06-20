@@ -56,6 +56,8 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+rfkill unblock wifi
+ip link set wlan0 up
 
 # --------------------------------------
 # Rocrail-Konfigurationsmenü Autostart
