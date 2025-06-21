@@ -1,19 +1,60 @@
-Rocrail PiOS - Version 1.2  
-Stand: 2025-05-26 00:00
+Rocrail PiOS – Versionsverlauf
+Stand: 2025-06-20
 
-Diese Version enthält:
-- Vollständiges Terminal-Menü mit 15 Funktionen
-- Architekturabhängige Rocrail-Installation (ARM64/ARMHF)
-- Autostart über Crontab (steuerbar über Menüpunkt 15)
-- Start im Benutzer- oder Demo-Modus
-- Update- und Backup-Funktionen
-- WLAN-Konfiguration und Systempflege
+-------------------------------------
+Version 1.5 (2025-06-20)
+-------------------------------------
+- WLAN-Autostart vollständig integriert (rfkill, wpa_supplicant, dhclient)
+- Anzeige der aktuellen IP-Adresse im Menü (LAN oder WLAN)
+- Anzeige von WLAN-Status inkl. verbundener SSID im Menü
+- WLAN-Konfiguration wird bei bestehender Verbindung übersprungen
+- Fehler "wrong ELF class: ELFCLASS32" durch libarmmem-Eintrag endgültig behoben
+- /etc/ld.so.preload wird zuverlässig entfernt
+- Menüstruktur bereinigt und verbessert
+- Version 1.5 in Git getaggt, Pi-gen-Builds stabil
 
-Autor: Oliver S.
+-------------------------------------
+Version 1.4 (2025-06-18)
+-------------------------------------
+- WLAN-Menü mit interaktiver Konfiguration hinzugefügt
+- DHCP-Konfiguration mit `dhclient wlan0`
+- Bugfix: rfkill unblock wifi hinzugefügt
+- Automatischer Start von raspi-rocrail-config nach Boot
+- Menüpunkt zur Rocrail-IP-Anzeige vorbereitet
 
-Funktionen (Stand: Version 1.3)
+-------------------------------------
+Version 1.3 (2025-06-10)
+-------------------------------------
+- Rocrail-Konfigurationsmenü komplett überarbeitet
+- Update-Funktion integriert (Snapshot-Download)
+- Backup- & Restore-Funktionen hinzugefügt
+- WLAN-Konfiguration (ohne Autostart) erstmals implementiert
+- Struktur der Skripte überarbeitet (raspi-rocrail-config v2)
 
-- Samba hinzugefügt
-- Samba Passwort setzen hinzugefügt
-- Default Timzone Europe/Berlin
+-------------------------------------
+Version 1.2 (2025-05-25)
+-------------------------------------
+- Umstellung auf sauberes Raspberry Pi OS Bookworm Lite (64-Bit)
+- Trennung von Programm- und Datenverzeichnissen für Rocrail
+- Alle Skripte überarbeitet für autarke Benutzerumgebung
+- Menüsteuerung verbessert, bashrc-Anpassung für Menüstart
+- Image wurde erstmals auf QEMU getestet
+
+-------------------------------------
+Version 1.1 (2025-05-03)
+-------------------------------------
+- Erste lauffähige Version mit Rocrail-Setup über Terminal
+- Menü mit grundlegenden Punkten (Installieren, Starten, Update)
+- Raspberry Pi OS Bookworm 64-Bit mit pi-gen gebaut
+- Erste Tests mit manuellem Rocrail-Download und manueller IP-Anzeige
+- Noch keine WLAN-Autokonfiguration
+
+-------------------------------------
+Version 1.0 (2025-04)
+-------------------------------------
+- Manuell erstelltes Image mit Rocrail-Setup
+- Kein Menü, keine Automatisierung, nur Tests
+- Basis für späteren Umstieg auf pi-gen
+- Git-Vorbereitungen und Skriptstruktur noch in Entstehung
+
 Autor: Oliver S.
