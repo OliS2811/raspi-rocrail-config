@@ -4,7 +4,7 @@ Dieses Projekt stellt ein **fertig vorbereitetes Raspberry Pi OS Lite Image** f�
 Ziel ist es, die Einrichtung so einfach wie möglich zu machen – ohne manuelle Paketinstallation, Konfiguration oder Linux-Kenntnisse.
 
 ---
-[Zum Download des Images](image/readme.md)
+[Zum Download des Images](image/README.md)
 
 
 ## ✅ Was macht das Image?
