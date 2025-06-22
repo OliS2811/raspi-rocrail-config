@@ -27,6 +27,8 @@ Nach dem ersten Start befinden sich folgende Dateien im Verzeichnis `/home/pi`:
 
 - Benutzername: `pi`  
 - Passwort: `rocrail`
+- Hostname: `rocrail`
+
 
 ## WLAN & Sprache
 
