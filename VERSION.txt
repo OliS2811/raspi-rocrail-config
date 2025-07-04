@@ -1,6 +1,15 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2025-06-20
 
+Rocrail PiOS – Version 1.6 
+Stand: 2025-07-04
+
+Diese Version enthält:
+- USB‑Automount via usbmount (Punkt 0)
+- NTP‑Zeitsynchronisation beim ersten Start (Punkt 0)
+- Backup (Punkt 5) erkennt jetzt automatisch gemountete USB‑Sticks unter `/media/usb*`.
+- Diverse Bug‑Fixes & Refactorings (Startskript nur einmal anlegen, Preload‑Fix, WLAN‑Autostart, Samba‑Setup).
+
 -------------------------------------
 Version 1.5 (2025-06-20)
 -------------------------------------

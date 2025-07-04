@@ -34,7 +34,7 @@ while true; do
   echo "$IP_ANZEIGE"
   echo "WLAN-Status: $WLAN_STATUS"
   echo "Bitte gib die gewünschte Menü-Nummer ein und bestätige mit Enter:"
-  echo "0) Rocrail-Verzeichnisse vorbereiten"
+  echo "0) Den Raspi für Rocrail vorbereiten (Wichtig)"
   echo "1) Rocrail installieren (architekturabhängig)"
   echo "2) Rocrail starten"
   echo "3) Rocrail stoppen"
@@ -55,57 +55,110 @@ while true; do
   read eingabe
   case $eingabe in
 
-    0)
-      echo "[INFO] Verzeichnisse werden vorbereitet..."
-      mkdir -p "$HOME/Documents/Rocrail/images"
-      mkdir -p "$HOME/Rocrail/bin"
-      # Fix für preload-Fehler auf 64-Bit-Systemen
-      if [ "$(uname -m)" = "aarch64" ] && grep -q 'libarmmem' /etc/ld.so.preload 2>/dev/null; then
-      echo "[INFO] Entferne inkompatiblen preload-Eintrag für 64-Bit..."
-      sudo sed -i 's|.*libarmmem.*|# &|' /etc/ld.so.preload
-fi
+   
+   0)
+  echo "[INFO] Ersteinrichtung – Verzeichnisse, Startskript & Automatisierungen..."
 
-      echo "[INFO] Erzeuge startrocrail.sh..."
-      cat > "$HOME/Rocrail/startrocrail.sh" <<EOF
+  # 1) Verzeichnisse anlegen
+  mkdir -p "$HOME/Documents/Rocrail/images"
+  mkdir -p "$HOME/Rocrail/bin"
+
+  # 2) Startskript erzeugen (nur, wenn noch nicht vorhanden)
+  if [ ! -f "$HOME/Rocrail/startrocrail.sh" ]; then
+    echo "[INFO] Erzeuge startrocrail.sh..."
+    cat > "$HOME/Rocrail/startrocrail.sh" <<'EOF'
 #!/bin/sh
-Arbeitsbereich=\$1
-cd \$HOME/Rocrail
-nohup \$HOME/Rocrail/bin/rocrail -l \$HOME/Rocrail/bin -w \$Arbeitsbereich -img \$Arbeitsbereich/images -f -pwr > /dev/null 2>&1 &
+# Standard: Benutzer-Arbeitsverzeichnis
+Arbeitsbereich="$HOME/Documents/Rocrail"
+# Falls ein Pfad übergeben wurde, verwende diesen
+if [ -n "$1" ]; then
+  Arbeitsbereich="$1"
+fi
+cd "$HOME/Rocrail" || exit 1
+nohup "$HOME/Rocrail/bin/rocrail" \
+  -l "$HOME/Rocrail/bin" \
+  -w "$Arbeitsbereich" \
+  -img "$Arbeitsbereich/images" \
+  -f -pwr > /dev/null 2>&1 &
 EOF
-      chmod +x "$HOME/Rocrail/startrocrail.sh"
-      ln -sf "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail.sh"
-      echo "[OK] Verzeichnisse und Startskript eingerichtet."
-      read -p "Weiter mit Enter..."
-      ;;
-    
+    chmod +x "$HOME/Rocrail/startrocrail.sh"
+    echo "[OK] startrocrail.sh erstellt und ausführbar gemacht."
+  else
+    echo "[INFO] startrocrail.sh ist bereits vorhanden – keine Änderung."
+  fi
+
+  # 3) Symlink im Home-Verzeichnis setzen (Überschreibung gewollt)
+  ln -sf "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail.sh"
+
+  # 4) Zeitsynchronisation via NTP einrichten
+  echo "[INFO] Zeitsynchronisation einrichten…"
+  if ! dpkg -s ntp &>/dev/null; then
+    echo "[INFO] Installiere NTP…"
+    sudo apt-get install -y ntp
+  fi
+  echo "[INFO] starte NTP-Dienst…"
+  sudo systemctl enable ntp.service      2>/dev/null || true
+  sudo systemctl restart ntp.service
+  echo "[INFO] Warte 10 Sekunden auf NTP Sync…"
+  sleep 10
+
+  # 5) Paketquellen aktualisieren
+  echo "[INFO] Aktualisiere Paketlisten…"
+  sudo apt-get update
+  # 6) USB‑Automount per externem Skript
+  if [ -x "$HOME/install-usbmount.sh" ]; then
+    echo "[INFO] USB-Automount installieren…"
+    bash "$HOME/install-usbmount.sh"
+    echo "[OK] USB-Automount eingerichtet."
+  else
+    echo "[WARNUNG] install-usbmount.sh nicht gefunden – USB-Automount übersprungen."
+  fi
+
+  echo "[OK] Ersteinrichtung abgeschlossen."
+  read -p "Weiter mit Enter..."
+  ;;
+ 
     1)
-      echo "[INFO] Rocrail wird installiert..."
-      if [ "$ARCH" = "aarch64" ]; then
-        URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
-        echo "[INFO] 64-Bit System erkannt – lade ARM64-Version"
-      else
-        URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
-        echo "[INFO] 32-Bit System erkannt – lade ARMHF-Version"
-      fi
+  echo "[INFO] Rocrail wird installiert..."
+  if [ "$ARCH" = "aarch64" ]; then
+    URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
+    echo "[INFO] 64-Bit System erkannt – lade ARM64-Version"
+  else
+    URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
+    echo "[INFO] 32-Bit System erkannt – lade ARMHF-Version"
+  fi
 
-      mkdir -p "$HOME/Downloads/Rocrail"
-      cd "$HOME/Downloads/Rocrail" || exit 1
-      wget --no-check-certificate "$URL" -O Rocrail.zip
-      unzip -u Rocrail.zip -d "$HOME/Rocrail"
-      chmod +x "$HOME/Rocrail/bin/rocrail"
+  mkdir -p "$HOME/Downloads/Rocrail"
+  cd "$HOME/Downloads/Rocrail" || exit 1
+  wget --no-check-certificate "$URL" -O Rocrail.zip
 
-      echo "[OK] Rocrail erfolgreich installiert."
-      echo
-      echo "[HINWEIS] Der Raspberry Pi wird jetzt neu gestartet."
-      echo "[HINWEIS] Die Verbindung zu diesem Fenster (z. B. PuTTY) wird dabei getrennt."
-      echo "[HINWEIS] Bitte nach etwa 1 Minute erneut per SSH verbinden."
-      echo
-      echo "[INFO] Neustart in 10 Sekunden – abbrechbar mit STRG+C..."
-      sleep 10
-      sudo timedatectl set-timezone Europe/Berlin
-      sudo reboot
-      ;;
+  # Vorhandene startrocrail.sh sichern, falls sie existiert
+  if [ -f "$HOME/Rocrail/startrocrail.sh" ]; then
+    echo "[INFO] Sichere vorhandene startrocrail.sh..."
+    cp "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail_backup.sh"
+  fi
 
+  unzip -o Rocrail.zip -d "$HOME/Rocrail"
+  chmod +x "$HOME/Rocrail/bin/rocrail"
+
+  # Wiederherstellen, falls nötig
+  if [ -f "$HOME/startrocrail_backup.sh" ]; then
+    echo "[INFO] Stelle eigene startrocrail.sh wieder her..."
+    mv "$HOME/startrocrail_backup.sh" "$HOME/Rocrail/startrocrail.sh"
+    chmod +x "$HOME/Rocrail/startrocrail.sh"
+  fi
+
+  echo "[OK] Rocrail erfolgreich installiert."
+  echo
+  echo "[HINWEIS] Der Raspberry Pi wird jetzt neu gestartet."
+  echo "[HINWEIS] Die Verbindung zu diesem Fenster (z. B. PuTTY) wird dabei getrennt."
+  echo "[HINWEIS] Bitte nach etwa 1 Minute erneut per SSH verbinden."
+  echo
+  echo "[INFO] Neustart in 10 Sekunden – abbrechbar mit STRG+C..."
+  sleep 10
+  sudo timedatectl set-timezone Europe/Berlin
+  sudo reboot
+  ;;
     
     2)
       echo "[INFO] Starte Rocrail im aktuellen Benutzerverzeichnis..."
@@ -135,53 +188,67 @@ EOF
       fi
       read -p "Weiter mit Enter..."
       ;;
+   5)
+  echo "[INFO] Backup wird erstellt..."
 
-        5)
-      echo "[INFO] Backup wird erstellt..."
+  SRC="$HOME/Documents/Rocrail"
+  DEFAULT_DEST="$HOME/Backups"
+  LOGFILE="$DEFAULT_DEST/backup.log"
+  DATE=$(date +'%Y-%m-%d_%H-%M')
 
-      SRC="$HOME/Documents/Rocrail"
-      DEST="$HOME/Backups"
-      LOGFILE="$DEST/backup.log"
+  # 1) USB‑Mountpoint suchen
+  USB_MP=""
+  for MP in /media/usb*; do
+    # existiert das Verzeichnis und ist ein echtes Mount‑Point?
+    if [ -d "$MP" ] && mountpoint -q "$MP"; then
+      USB_MP="$MP"
+      break
+    fi
+  done
 
-      # Prüfen auf eingehängte USB-Sticks unter /media/pi/
-      USB_PATH=$(find /media/pi/* -maxdepth 0 -type d 2>/dev/null | head -n 1)
-      if [ -n "$USB_PATH" ]; then
-        DEST="$USB_PATH/Backups"
-        echo "[INFO] USB-Stick erkannt – Sicherung nach: $DEST"
-      else
-        echo "[INFO] Kein USB-Stick erkannt – Sicherung nach: $DEST"
-      fi
+  if [ -n "$USB_MP" ]; then
+    DEST="$USB_MP/Backups"
+    echo "[INFO] USB-Stick erkannt – Sicherung nach: $DEST"
+  else
+    DEST="$DEFAULT_DEST"
+    echo "[INFO] Kein USB-Stick erkannt – Sicherung nach: $DEST"
+  fi
 
-      # Quelle prüfen
-      if [ ! -d "$SRC" ]; then
-        echo "[FEHLER] Quellordner '$SRC' existiert nicht."
-        read -p "Weiter mit Enter..."
-        continue
-      fi
+  # 2) Quelle prüfen
+  if [ ! -d "$SRC" ]; then
+    echo "[FEHLER] Quellordner '$SRC' existiert nicht."
+    read -p "Weiter mit Enter..."
+    continue
+  fi
 
-      mkdir -p "$DEST"
-      DATE=$(date +'%Y-%m-%d_%H-%M')
-      ZIPFILE="$DEST/rocrail_backup_$DATE.zip"
+  # 3) Backup-Verzeichnis anlegen
+  mkdir -p "$DEST"
 
-      echo "[INFO] Sichere nach: $ZIPFILE"
-      zip -r "$ZIPFILE" "$SRC" > /dev/null 2>&1
+  ZIPFILE="$DEST/rocrail_backup_$DATE.zip"
+  echo "[INFO] Sichere nach: $ZIPFILE"
+  zip -r "$ZIPFILE" "$SRC" > /dev/null 2>&1
 
-      if [ -f "$ZIPFILE" ]; then
-        echo "[OK] Backup gespeichert: $ZIPFILE"
-        echo "$(date +'%Y-%m-%d %H:%M') Backup: $ZIPFILE" >> "$LOGFILE"
-      else
-        echo "[FEHLER] Backup fehlgeschlagen!"
-        echo "$(date +'%Y-%m-%d %H:%M') Fehler beim Backup!" >> "$LOGFILE"
-      fi
+  if [ -f "$ZIPFILE" ]; then
+    echo "[OK] Backup gespeichert: $ZIPFILE"
+    echo "$(date +'%Y-%m-%d %H:%M') Backup: $ZIPFILE" >> "$LOGFILE"
+  else
+    echo "[FEHLER] Backup fehlgeschlagen!"
+    echo "$(date +'%Y-%m-%d %H:%M') Fehler beim Backup!" >> "$LOGFILE"
+  fi
 
-      # Automatisches Aufräumen alter Backups (älter als 30 Tage)
-      echo "[INFO] Alte Backups (>10 Tage) werden gelöscht..."
-      find "$DEST" -name 'rocrail_backup_*.zip' -mtime +30 -delete
+  # 4) Alte Backups löschen
+  OLD=$(find "$DEST" -name 'rocrail_backup_*.zip' -mtime +30)
+  if [ -n "$OLD" ]; then
+    echo "[INFO] Alte Backups (>30 Tage) in $DEST werden gelöscht…"
+    find "$DEST" -name 'rocrail_backup_*.zip' -mtime +30 -delete
+  else
+    echo "[INFO] Keine alten Backups (>30 Tage) in $DEST gefunden."
+  fi
 
-      read -p "Weiter mit Enter..."
-      ;;
+  read -p "Weiter mit Enter..."
+  ;;
 
-    6)
+      6)
       echo "[INFO] Starte Update über update1.sh..."
 
       if pgrep -x rocrail > /dev/null; then
