@@ -10,6 +10,7 @@ Diese Version enthält:
 - Backup (Punkt 5) erkennt jetzt automatisch gemountete USB‑Sticks unter `/media/usb*`.
 - Diverse Bug‑Fixes & Refactorings (Startskript nur einmal anlegen, Preload‑Fix, WLAN‑Autostart, Samba‑Setup).
 
+
 -------------------------------------
 Version 1.5 (2025-06-20)
 -------------------------------------
