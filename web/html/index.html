@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Rocrail Webinterface</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    .btn {
+      margin: 5px;
+    }
+    #output {
+      background-color: #111;
+      color: #0f0;
+      padding: 15px;
+      margin-top: 20px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Rocrail Webinterface</h2>
+
+<div class="mb-3">
+  <strong>🔌 WLAN einrichten</strong>
+  <form id="wlanForm" class="row g-2 align-items-center mt-2">
+    <div class="col-auto">
+      <input type="text" class="form-control form-control-sm" id="ssid" name="ssid" placeholder="SSID" required>
+    </div>
+    <div class="col-auto">
+      <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="Passwort" required>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-sm btn-primary">WLAN einrichten</button>
+    </div>
+    <div class="col-auto">
+      <span id="wlanStatus" class="text-muted small"></span>
+    </div>
+  </form>
+</div>
+
+<!-- Nur sichtbar wenn Samba installiert -->
+<div class="mb-3" id="sambaBox" style="display: none;">
+  <strong>🔐 Samba-Passwort setzen</strong>
+  <form id="sambaForm" class="row g-2 align-items-center mt-2">
+    <div class="col-auto">
+      <input type="password" class="form-control form-control-sm" id="sambaPass" placeholder="Neues Passwort" required>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-sm btn-primary">Passwort setzen</button>
+    </div>
+    <div class="col-auto">
+      <span id="sambaStatus" class="text-muted small"></span>
+    </div>
+  </form>
+</div>
+
+<div id="buttons" class="mb-3">
+  <div class="d-flex flex-wrap">
+    <button class="btn btn-primary" onclick="runScript(0)">0) Den Raspi für Rocrail vorbereiten (Wichtig)</button>
+    <button class="btn btn-primary" onclick="runScript(1)">1) Rocrail installieren (architekturabhängig)</button>
+    <button class="btn btn-primary" onclick="runScript(2)">2) Rocrail starten</button>
+    <button class="btn btn-primary" onclick="runScript(3)">3) Rocrail stoppen</button>
+    <button class="btn btn-primary" onclick="runScript(4)">4) Rocrail Status anzeigen</button>
+    <button class="btn btn-primary" onclick="runScript(5)">5) Rocrail Backup erstellen</button>
+    <button class="btn btn-primary" onclick="runScript(6)">6) Rocrail aktualisieren</button>
+    <button class="btn btn-primary" onclick="runScript(7)">7) Raspberry Pi OS updaten</button>
+    <button class="btn btn-primary" onclick="runScript(8)">8) System neu starten</button>
+    <button class="btn btn-primary" onclick="runScript(9)">9) Seite neu laden</button>
+    <button class="btn btn-primary" onclick="runScript(10)">10) Rocrail mit Wiki-Demo starten</button>
+    <button class="btn btn-primary" onclick="runScript(11)">11) WLAN einrichten</button>
+    <button class="btn btn-primary" onclick="runScript(12)">12) Rocrail im Benutzer-Modus starten</button>
+    <button class="btn btn-primary" onclick="runScript(13)">13) Rocrail Autostart (Crontab) einrichten</button>
+    <button class="btn btn-primary" onclick="runScript(14)">14) Samba Freigaben einrichten</button>
+    <button class="btn btn-primary" onclick="runScript(15)">15) Samba-Passwort für pi setzen</button>
+    <button class="btn btn-primary" onclick="runScript(16)">16) Raspberry herunterfahren</button>
+  </div>
+</div>
+
+<div id="output"></div>
+
+<script>
+// WLAN-Status automatisch laden
+fetch('wlan_status.php')
+  .then(response => response.text())
+  .then(status => {
+    const statusEl = document.getElementById("wlanStatus");
+    if (statusEl && status.length > 0) {
+      statusEl.textContent = status;
+    }
+  });
+
+// Samba-Box einblenden wenn installiert
+fetch('samba_check.php')
+  .then(response => response.json())
+  .then(data => {
+    if (data.samba_installed) {
+      document.getElementById('sambaBox').style.display = 'block';
+    }
+  });
+
+function runScript(punkt) {
+  const output = document.getElementById("output");
+  output.innerHTML = "<span style='color: orange;'>Bitte warten...</span>";
+
+  fetch('run.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'punkt=' + punkt
+  })
+  .then(response => response.text())
+  .then(data => {
+    if (data.trim() === '[RELOAD]') {
+      output.innerHTML = "<span style='color: green;'>🔄 Seite wird neu geladen...</span>";
+      setTimeout(() => location.reload(true), 1500);
+    } else {
+      output.innerHTML = data;
+      setTimeout(() => {
+        document.getElementById("output").innerHTML = "";
+      }, 30000);
+    }
+  })
+  .catch(error => {
+    output.innerHTML = "<span style='color:red;'>Fehler: " + error + "</span>";
+  });
+}
+
+document.getElementById('wlanForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const ssid = document.getElementById('ssid').value;
+  const password = document.getElementById('password').value;
+  const statusEl = document.getElementById('wlanStatus');
+  statusEl.textContent = "Bitte warten…";
+
+  fetch('save_wifi.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ssid: ssid, password: password })
+  })
+  .then(response => response.text())
+  .then(data => {
+    if (data.trim() === 'OK') {
+      fetch('run.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'punkt=11'
+      })
+      .then(response => response.text())
+      .then(output => statusEl.textContent = output)
+      .catch(err => statusEl.textContent = "Fehler beim Ausführen.");
+    } else {
+      statusEl.textContent = "Fehler beim Speichern.";
+    }
+  })
+  .catch(err => statusEl.textContent = "Fehler beim Übertragen.");
+});
+
+document.getElementById('sambaForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const password = document.getElementById('sambaPass').value.trim();
+  const statusEl = document.getElementById('sambaStatus');
+
+  if (password === '') {
+    statusEl.textContent = "❌ Bitte Passwort eingeben.";
+    return;
+  }
+
+  statusEl.textContent = "Bitte warten…";
+
+  fetch('save_samba_pass.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: password })
+  })
+  .then(response => response.text())
+  .then(data => {
+    if (data.trim() === 'OK') {
+      fetch('run.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'punkt=15'
+      })
+      .then(response => response.text())
+      .then(output => statusEl.textContent = "✅ " + output)
+      .catch(err => statusEl.textContent = "❌ Fehler beim Ausführen.");
+    } else {
+      statusEl.textContent = "❌ Fehler: " + data;
+    }
+  })
+  .catch(err => statusEl.textContent = "❌ Netzwerkfehler: " + err);
+});
+</script>
+
+</body>
+</html>
