@@ -3,87 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <title>Rocrail Webinterface</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     body {
-      padding: 20px;
-      background-color: #f8f9fa;
+      padding: 30px 0;
+      background: #f2f5fa;
     }
-    .btn {
-      margin: 5px;
+    .rocrail-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .rocrail-header h2 {
+      margin-bottom: 0;
+      color: #1a355e;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    .rocrail-header img {
+      width: 48px; margin-bottom: 8px;
+    }
+    .card {
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+    .btn-menu {
+      min-width: 330px;
+      text-align: left;
+      font-family: monospace;
+      margin-bottom: 10px;
+      white-space: normal;
     }
     #output {
-      background-color: #111;
-      color: #0f0;
-      padding: 15px;
-      margin-top: 20px;
-      font-family: monospace;
-      white-space: pre-wrap;
+      background: #181a20;
+      color: #8cffb5;
+      min-height: 80px;
+      padding: 18px;
       border-radius: 8px;
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 1.08em;
+      white-space: pre-wrap;
+    }
+    @media (max-width: 600px) {
+      .btn-menu { min-width: 160px; font-size: 0.97em;}
     }
   </style>
 </head>
 <body>
 
-<h2>Rocrail Webinterface</h2>
-
-<div class="mb-3">
-  <strong>🔌 WLAN einrichten</strong>
-  <form id="wlanForm" class="row g-2 align-items-center mt-2">
-    <div class="col-auto">
-      <input type="text" class="form-control form-control-sm" id="ssid" name="ssid" placeholder="SSID" required>
-    </div>
-    <div class="col-auto">
-      <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="Passwort" required>
-    </div>
-    <div class="col-auto">
-      <button type="submit" class="btn btn-sm btn-primary">WLAN einrichten</button>
-    </div>
-    <div class="col-auto">
-      <span id="wlanStatus" class="text-muted small"></span>
-    </div>
-  </form>
+<div class="rocrail-header">
+  <img src="https://www.rocrail.net/rocrail-logo.png" alt="Rocrail" onerror="this.style.display='none'">
+  <h2>Rocrail Webinterface</h2>
+  <p class="lead text-secondary">Steuere deinen Rocrail-Raspberry jetzt noch bequemer!</p>
 </div>
 
-<!-- Nur sichtbar wenn Samba installiert -->
-<div class="mb-3" id="sambaBox" style="display: none;">
-  <strong>🔐 Samba-Passwort setzen</strong>
-  <form id="sambaForm" class="row g-2 align-items-center mt-2">
-    <div class="col-auto">
-      <input type="password" class="form-control form-control-sm" id="sambaPass" placeholder="Neues Passwort" required>
-    </div>
-    <div class="col-auto">
-      <button type="submit" class="btn btn-sm btn-primary">Passwort setzen</button>
-    </div>
-    <div class="col-auto">
-      <span id="sambaStatus" class="text-muted small"></span>
-    </div>
-  </form>
-</div>
+<div class="container" style="max-width:700px">
 
-<div id="buttons" class="mb-3">
-  <div class="d-flex flex-wrap">
-    <button class="btn btn-primary" onclick="runScript(0)">0) Den Raspi für Rocrail vorbereiten (Wichtig)</button>
-    <button class="btn btn-primary" onclick="runScript(1)">1) Rocrail installieren (architekturabhängig)</button>
-    <button class="btn btn-primary" onclick="runScript(2)">2) Rocrail starten</button>
-    <button class="btn btn-primary" onclick="runScript(3)">3) Rocrail stoppen</button>
-    <button class="btn btn-primary" onclick="runScript(4)">4) Rocrail Status anzeigen</button>
-    <button class="btn btn-primary" onclick="runScript(5)">5) Rocrail Backup erstellen</button>
-    <button class="btn btn-primary" onclick="runScript(6)">6) Rocrail aktualisieren</button>
-    <button class="btn btn-primary" onclick="runScript(7)">7) Raspberry Pi OS updaten</button>
-    <button class="btn btn-primary" onclick="runScript(8)">8) System neu starten</button>
-    <button class="btn btn-primary" onclick="runScript(9)">9) Seite neu laden</button>
-    <button class="btn btn-primary" onclick="runScript(10)">10) Rocrail mit Wiki-Demo starten</button>
-    <button class="btn btn-primary" onclick="runScript(11)">11) WLAN einrichten</button>
-    <button class="btn btn-primary" onclick="runScript(12)">12) Rocrail im Benutzer-Modus starten</button>
-    <button class="btn btn-primary" onclick="runScript(13)">13) Rocrail Autostart (Crontab) einrichten</button>
-    <button class="btn btn-primary" onclick="runScript(14)">14) Samba Freigaben einrichten</button>
-    <button class="btn btn-primary" onclick="runScript(15)">15) Samba-Passwort für pi setzen</button>
-    <button class="btn btn-primary" onclick="runScript(16)">16) Raspberry herunterfahren</button>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <strong>🔌 WLAN einrichten</strong>
+      <form id="wlanForm" class="row g-2 align-items-center mt-2">
+        <div class="col-auto flex-grow-1">
+          <input type="text" class="form-control form-control-sm" id="ssid" name="ssid" placeholder="SSID" required>
+        </div>
+        <div class="col-auto flex-grow-1">
+          <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="Passwort" required>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-wifi"></i> WLAN einrichten</button>
+        </div>
+        <div class="col-auto">
+          <span id="wlanStatus" class="text-muted small"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm" id="sambaBox" style="display: none;">
+    <div class="card-body">
+      <strong>🔐 Samba-Passwort setzen</strong>
+      <form id="sambaForm" class="row g-2 align-items-center mt-2">
+        <div class="col-auto flex-grow-1">
+          <input type="password" class="form-control form-control-sm" id="sambaPass" placeholder="Neues Passwort" required>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-secondary"><i class="fas fa-key"></i> Passwort setzen</button>
+        </div>
+        <div class="col-auto">
+          <span id="sambaStatus" class="text-muted small"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <strong>⚙️ Aktionen</strong>
+      <div id="buttons" class="row g-2 mt-2">
+        <div class="col-12 col-sm-6">
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(0)"><b>0)</b> Den Raspi für Rocrail vorbereiten (Wichtig)</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(1)"><b>1)</b> Rocrail installieren (architekturabhängig)</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(2)"><b>2)</b> Rocrail starten</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(3)"><b>3)</b> Rocrail stoppen</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(4)"><b>4)</b> Rocrail Status anzeigen</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(5)"><b>5)</b> Rocrail Backup erstellen</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(6)"><b>6)</b> Rocrail aktualisieren</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(7)"><b>7)</b> Raspberry Pi OS updaten</button>
+        </div>
+        <div class="col-12 col-sm-6">
+          <button class="btn btn-menu btn-outline-danger" onclick="runScript(8)"><b>8)</b> System neu starten</button>
+          <button class="btn btn-menu btn-outline-warning" onclick="runScript(9)"><b>9)</b> Seite neu laden</button>
+          <button class="btn btn-menu btn-outline-info" onclick="runScript(10)"><b>10)</b> Rocrail mit Wiki-Demo starten</button>
+          <button class="btn btn-menu btn-outline-success" onclick="runScript(11)"><b>11)</b> WLAN einrichten</button>
+          <button class="btn btn-menu btn-outline-secondary" onclick="runScript(12)"><b>12)</b> Rocrail im Benutzer-Modus starten</button>
+          <button class="btn btn-menu btn-outline-secondary" onclick="runScript(13)"><b>13)</b> Rocrail Autostart (Crontab) einrichten</button>
+          <button class="btn btn-menu btn-outline-dark" onclick="runScript(14)"><b>14)</b> Samba Freigaben einrichten</button>
+          <button class="btn btn-menu btn-outline-dark" onclick="runScript(15)"><b>15)</b> Samba-Passwort für pi setzen</button>
+          <button class="btn btn-menu btn-outline-dark" onclick="runScript(16)"><b>16)</b> Raspberry herunterfahren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="output" class="shadow-sm"></div>
+
+  <!-- Rocweb Mini-Preview -->
+  <div class="card shadow-sm mt-4">
+    <div class="card-body" id="rocweb-preview-container">
+      <p class="text-muted">🔍 Prüfe Rocrail-Webserver-Verfügbarkeit…</p>
+    </div>
   </div>
 </div>
 
-<div id="output"></div>
+<!-- Spinner für Ladeanzeige -->
+<div id="loadingSpinner" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div class="d-flex justify-content-center align-items-center" style="height:100vh;">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status">
+      <span class="visually-hidden">Bitte warten...</span>
+    </div>
+  </div>
+</div>
 
 <script>
 // WLAN-Status automatisch laden
@@ -105,8 +166,13 @@ fetch('samba_check.php')
     }
   });
 
+function showSpinner(show=true) {
+  document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
+}
+
 function runScript(punkt) {
   const output = document.getElementById("output");
+  showSpinner(true);
   output.innerHTML = "<span style='color: orange;'>Bitte warten...</span>";
 
   fetch('run.php', {
@@ -116,17 +182,17 @@ function runScript(punkt) {
   })
   .then(response => response.text())
   .then(data => {
+    showSpinner(false);
     if (data.trim() === '[RELOAD]') {
       output.innerHTML = "<span style='color: green;'>🔄 Seite wird neu geladen...</span>";
       setTimeout(() => location.reload(true), 1500);
     } else {
       output.innerHTML = data;
-      setTimeout(() => {
-        document.getElementById("output").innerHTML = "";
-      }, 30000);
+      setTimeout(() => { output.innerHTML = ""; }, 30000);
     }
   })
   .catch(error => {
+    showSpinner(false);
     output.innerHTML = "<span style='color:red;'>Fehler: " + error + "</span>";
   });
 }
@@ -195,7 +261,31 @@ document.getElementById('sambaForm').addEventListener('submit', function (e) {
   })
   .catch(err => statusEl.textContent = "❌ Netzwerkfehler: " + err);
 });
-</script>
 
+// Rocweb Live-Vorschau prüfen und ggf. anzeigen
+const rocwebPreview = document.getElementById("rocweb-preview-container");
+
+fetch("http://rocrail:8080", { method: "HEAD", mode: "no-cors" })
+  .then(() => {
+    rocwebPreview.innerHTML = `
+      <h5>🛤️ Mini-Stellpult (Live-Vorschau)</h5>
+      <iframe src="http://rocrail:8080"
+              width="100%" height="400"
+              style="border:1px solid #ccc; border-radius:8px;"></iframe>
+      <p class="text-success small mt-2">
+        ✅ Rocweb-Webserver läuft auf Port <strong>8080</strong>.
+      </p>
+    `;
+  })
+  .catch(() => {
+    rocwebPreview.innerHTML = `
+      <p class="text-danger">
+        ⚠️ Rocweb-Webserver ist nicht erreichbar.<br>
+        Bitte stelle sicher, dass Rocweb auf Port <strong>8080</strong> läuft.<br>
+        Manuell testen: <a href="http://rocrail:8080" target="_blank">http://rocrail:8080/</a>
+      </p>
+    `;
+  });
+</script>
 </body>
 </html>
