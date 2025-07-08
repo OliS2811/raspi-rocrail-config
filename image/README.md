@@ -8,6 +8,9 @@ Dieses Image basiert auf Raspberry Pi OS (64-Bit, Bookworm Lite) und enthält al
 
 📥 [Download Rocrail Pi OS 64bit Image](https://drive.google.com/file/d/1v4Kdt1MVmeLqbsVOGWDm8Q9QSYh6_NEY/view?usp=sharing)
 
+📥 [Download Rocrail Pi OS 64bit Image mit Webinterface](https://drive.google.com/file/d/1aaFPqC4FQzIOPaJgczbgeK7Eki4mBnZt/view?usp=sharing)
+
+
 ## Inhalt des Images
 
 Nach dem ersten Start befinden sich folgende Dateien im Verzeichnis `/home/pi`:
