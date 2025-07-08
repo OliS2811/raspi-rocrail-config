@@ -40,6 +40,17 @@ Ab Version **1.7** steht ein modernes Webinterface zur Verfügung, erreichbar un
 - Der gewohnte Terminal-Modus bleibt zusätzlich erhalten – perfekt für Power-User
 
 ---
+## Nutzung ohne Webinterface (Kommandozeile/Bash)
+
+Das Image funktioniert weiterhin **vollständig ohne Webinterface**.  
+Das klassische Startmenü **öffnet sich beim Systemstart automatisch** auf dem lokalen Bildschirm (Konsole/HDMI).
+
+### Menü manuell öffnen (falls benötigt)
+
+Falls das Menü einmal geschlossen wurde, kann es jederzeit per Konsole wieder geöffnet werden:
+```sh
+cd ~
+./raspi-rocrail-config
 
 ## 💡 Zielgruppe
 
