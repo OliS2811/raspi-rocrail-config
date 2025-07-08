@@ -43,7 +43,7 @@ Ab Version **1.7** steht ein modernes Webinterface zur Verfügung, erreichbar un
 ## Nutzung ohne Webinterface (Kommandozeile/Bash)
 
 Das Image funktioniert weiterhin **vollständig ohne Webinterface**.  
-Das klassische Startmenü **öffnet sich beim Systemstart automatisch** auf dem lokalen Bildschirm (Konsole/HDMI).
+Das klassische Startmenü **öffnet sich nach Login automatisch** auf dem lokalen Bildschirm oder der SSH Konsole.
 
 ### Menü manuell öffnen (falls benötigt)
 
@@ -51,6 +51,7 @@ Falls das Menü einmal geschlossen wurde, kann es jederzeit per Konsole wieder g
 ```sh
 cd ~
 ./raspi-rocrail-config
+```
 
 ## 💡 Zielgruppe
 
@@ -79,6 +80,7 @@ cd ~
 git clone https://github.com/OliS2811/raspi-rocrail-config.git
 cp raspi-rocrail-config/raspi-rocrail-config ~/
 chmod +x ~/raspi-rocrail-config
+```
 ---
 
 ## 📝 Hinweise & Anpassungen
