@@ -27,6 +27,8 @@ Ziel: Die Einrichtung und Steuerung von Rocrail auf dem Pi soll maximal einfach 
 
 ## 🖥️ Neu: Das Rocrail Webinterface
 
+<img src="image/bild.png" alt="Alternativtext" width="300" />
+
 Ab Version **1.7** steht ein modernes Webinterface zur Verfügung, erreichbar unter  
 `http://rocrail/` oder der IP-Adresse des Pis im Browser.
 
