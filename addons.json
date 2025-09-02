@@ -1,0 +1,16 @@
+{
+  "addons": [
+    {
+      "id": "git_support",
+      "name": "Git + Changelog",
+      "description": "Versioniere deine plan.xml mit Git und pushe Änderungen zu GitHub.",
+      "script_url": "https://raw.githubusercontent.com/OliS2811/rocrail-addons/main/install_git_support.sh"
+    },
+    {
+      "id": "backup_tool",
+      "name": "Erweitertes Backup",
+      "description": "Erstelle Backups inkl. Rocrail-Konfig, Bilder und Logs.",
+      "script_url": "https://raw.githubusercontent.com/OliS2811/rocrail-addons/main/install_backup_tool.sh"
+    }
+  ]
+}
