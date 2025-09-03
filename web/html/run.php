@@ -2,9 +2,10 @@
 $allowed = range(0, 16);
 $repoDir = "/home/pi/Documents/Rocrail";   // Ordner, in dem plan.xml liegt
 
+header("Content-Type: text/plain");
+
 // === Addon Installation ===
 if (isset($_POST['addon_id']) && isset($_POST['script_url'])) {
-    header("Content-Type: text/plain; charset=UTF-8");
     $addon = escapeshellarg($_POST['addon_id']);
     $url   = escapeshellarg($_POST['script_url']);
     $tmp   = "/tmp/${addon}.sh";
@@ -25,7 +26,6 @@ if (isset($_POST['git_action'])) {
     $action = $_POST['git_action'];
 
     if ($action === "setup") {
-        header("Content-Type: text/plain; charset=UTF-8");
         $user   = escapeshellarg($_POST['git_user']);
         $email  = escapeshellarg($_POST['git_email']);
         $remote = escapeshellarg($_POST['git_remote']);
@@ -34,32 +34,31 @@ if (isset($_POST['git_action'])) {
     }
 
     if ($action === "commit") {
-        header("Content-Type: text/plain; charset=UTF-8");
         $msg = escapeshellarg($_POST['commit_msg']);
         passthru("sudo -u pi /usr/local/bin/update_git_plan.sh $msg 2>&1");
         exit;
     }
 
     if ($action === "push") {
-        header("Content-Type: text/plain; charset=UTF-8");
         passthru("sudo -u pi git -C $repoDir push origin main 2>&1");
         exit;
     }
 
-   if ($action === "showlog") {
-    // Commit-Hash, Datum, Autor, Nachricht
-    passthru("cd $repoDir && sudo -u pi git --no-pager log --pretty=format:'%h %ad %an%n    %s%n' --date=short -n 20 2>&1");
-    exit;
-}
+    if ($action === "showlog") {
+        header("Content-Type: text/plain; charset=UTF-8");
+        // Ausgabe: Hash | Datum | Autor | Nachricht
+        $log = shell_exec("cd $repoDir && sudo -u pi git --no-pager log --pretty=format:'%h | %ad | %an | %s' --date=short -n 20 2>&1");
+        echo $log;
+        exit;
+    }
+
     http_response_code(400);
-    header("Content-Type: text/plain; charset=UTF-8");
     echo "Ungültige Git-Aktion.";
     exit;
 }
 
 // === Klassische Menü-Punkte 0–16 ===
 if (isset($_POST['punkt'])) {
-    header("Content-Type: text/plain; charset=UTF-8");
     $punkt = intval($_POST['punkt']);
 
     if ($punkt === 15) {
@@ -83,6 +82,5 @@ if (isset($_POST['punkt'])) {
 
 // === Fallback ===
 http_response_code(400);
-header("Content-Type: text/plain; charset=UTF-8");
 echo "Keine Aktion übergeben.";
 ?>
