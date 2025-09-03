@@ -61,6 +61,7 @@
 
 <div class="container" style="max-width:700px">
 
+  <!-- WLAN -->
   <div class="card shadow-sm">
     <div class="card-body">
       <strong>🔌 WLAN einrichten</strong>
@@ -81,6 +82,7 @@
     </div>
   </div>
 
+  <!-- Samba -->
   <div class="card shadow-sm" id="sambaBox" style="display: none;">
     <div class="card-body">
       <strong>🔐 Samba-Passwort setzen</strong>
@@ -98,6 +100,7 @@
     </div>
   </div>
 
+  <!-- Aktionen -->
   <div class="card shadow-sm">
     <div class="card-body">
       <strong>⚙️ Aktionen</strong>
@@ -129,7 +132,14 @@
 
   <div id="output" class="shadow-sm"></div>
 
-  <!-- Rocweb Mini-Preview -->
+  <!-- Git Box -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body" id="gitBox">
+      <p class="text-muted small">🔍 Prüfe Git-Status…</p>
+    </div>
+  </div>
+
+  <!-- Rocweb Preview -->
   <div class="card shadow-sm mt-4">
     <div class="card-body" id="rocweb-preview-container">
       <p class="text-muted">🔍 Prüfe Rocrail-Webserver-Verfügbarkeit…</p>
@@ -137,7 +147,7 @@
   </div>
 </div>
 
-<!-- Spinner für Ladeanzeige -->
+<!-- Spinner -->
 <div id="loadingSpinner" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.7);z-index:9999;align-items:center;justify-content:center;">
   <div class="d-flex justify-content-center align-items-center" style="height:100vh;">
     <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status">
@@ -147,7 +157,7 @@
 </div>
 
 <script>
-// WLAN-Status automatisch laden
+// WLAN-Status laden
 fetch('wlan_status.php')
   .then(response => response.text())
   .then(status => {
@@ -157,12 +167,50 @@ fetch('wlan_status.php')
     }
   });
 
-// Samba-Box einblenden wenn installiert
+// Samba-Box prüfen
 fetch('samba_check.php')
   .then(response => response.json())
   .then(data => {
     if (data.samba_installed) {
       document.getElementById('sambaBox').style.display = 'block';
+    }
+  });
+
+// Git-Status prüfen
+fetch('git_check.php')
+  .then(response => response.json())
+  .then(data => {
+    const gitBox = document.getElementById("gitBox");
+    if (data.installed) {
+      gitBox.innerHTML = `
+        <strong><i class="fa-solid fa-code-branch"></i> Git & Changelog</strong>
+        <div class="row g-2 mt-2">
+          <div class="col-12 col-md-9">
+            <input type="text" class="form-control form-control-sm" id="commitMsg" placeholder="Änderungsbeschreibung">
+          </div>
+          <div class="col-12 col-md-3">
+            <button class="btn btn-sm btn-success w-100" onclick="gitCommit()">💾 Speichern</button>
+          </div>
+        </div>
+        <div class="row g-2 mt-2">
+          <div class="col-6">
+            <button class="btn btn-sm btn-outline-primary w-100" onclick="gitPush()">🚀 Push</button>
+          </div>
+          <div class="col-6">
+            <button class="btn btn-sm btn-outline-secondary w-100" onclick="gitShowLog()">📜 Log</button>
+          </div>
+        </div>
+        <div id="gitOutput" class="mt-3 small text-monospace"></div>
+      `;
+    } else {
+      gitBox.innerHTML = `
+        <strong>📂 Git-Support (optional)</strong>
+        <p class="text-muted small">Mit Git kannst du Änderungen an <code>plan.xml</code> versionieren und bei GitHub sichern.</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="git_info.html" target="_blank" class="btn btn-outline-info">ℹ️ Mehr erfahren</a>
+          <button class="btn btn-outline-success" onclick="installGitSupport()">🚀 Git-Support installieren</button>
+        </div>
+      `;
     }
   });
 
@@ -180,7 +228,7 @@ function runScript(punkt) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'punkt=' + punkt
   })
-  .then(response => response.text())
+  .then(r => r.text())
   .then(data => {
     showSpinner(false);
     if (data.trim() === '[RELOAD]') {
@@ -191,101 +239,55 @@ function runScript(punkt) {
       setTimeout(() => { output.innerHTML = ""; }, 30000);
     }
   })
-  .catch(error => {
+  .catch(err => {
     showSpinner(false);
-    output.innerHTML = "<span style='color:red;'>Fehler: " + error + "</span>";
+    output.innerHTML = "Fehler: " + err;
   });
 }
 
-document.getElementById('wlanForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const ssid = document.getElementById('ssid').value;
-  const password = document.getElementById('password').value;
-  const statusEl = document.getElementById('wlanStatus');
-  statusEl.textContent = "Bitte warten…";
-
-  fetch('save_wifi.php', {
+function installGitSupport() {
+  const out = document.getElementById("gitBox");
+  showSpinner(true);
+  fetch('run.php', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ssid: ssid, password: password })
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'git_action=install'
   })
-  .then(response => response.text())
-  .then(data => {
-    if (data.trim() === 'OK') {
-      fetch('run.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'punkt=11'
-      })
-      .then(response => response.text())
-      .then(output => statusEl.textContent = output)
-      .catch(err => statusEl.textContent = "Fehler beim Ausführen.");
-    } else {
-      statusEl.textContent = "Fehler beim Speichern.";
-    }
-  })
-  .catch(err => statusEl.textContent = "Fehler beim Übertragen.");
-});
+  .then(r => r.text())
+  .then(t => { showSpinner(false); out.innerHTML = "<pre>"+t+"</pre>"; })
+  .catch(err => { showSpinner(false); out.innerHTML = "Fehler: " + err; });
+}
 
-document.getElementById('sambaForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const password = document.getElementById('sambaPass').value.trim();
-  const statusEl = document.getElementById('sambaStatus');
-
-  if (password === '') {
-    statusEl.textContent = "❌ Bitte Passwort eingeben.";
-    return;
-  }
-
-  statusEl.textContent = "Bitte warten…";
-
-  fetch('save_samba_pass.php', {
+function gitCommit() {
+  const msg = document.getElementById('commitMsg').value;
+  const out = document.getElementById('gitOutput');
+  out.textContent = "Bitte warten…";
+  fetch('run.php', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: password })
-  })
-  .then(response => response.text())
-  .then(data => {
-    if (data.trim() === 'OK') {
-      fetch('run.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'punkt=15'
-      })
-      .then(response => response.text())
-      .then(output => statusEl.textContent = "✅ " + output)
-      .catch(err => statusEl.textContent = "❌ Fehler beim Ausführen.");
-    } else {
-      statusEl.textContent = "❌ Fehler: " + data;
-    }
-  })
-  .catch(err => statusEl.textContent = "❌ Netzwerkfehler: " + err);
-});
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'git_action=commit&commit_msg='+encodeURIComponent(msg)
+  }).then(r=>r.text()).then(t=>out.textContent=t).catch(err=>out.textContent="Fehler: "+err);
+}
 
-// Rocweb Live-Vorschau prüfen und ggf. anzeigen
+function gitPush() {
+  const out = document.getElementById('gitOutput');
+  out.textContent = "Bitte warten…";
+  fetch('run.php', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=push'})
+    .then(r=>r.text()).then(t=>out.textContent=t).catch(err=>out.textContent="Fehler: "+err);
+}
+
+function gitShowLog() {
+  const out = document.getElementById('gitOutput');
+  out.textContent = "Bitte warten…";
+  fetch('run.php', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=showlog'})
+    .then(r=>r.text()).then(t=>out.textContent=t).catch(err=>out.textContent="Fehler: "+err);
+}
+
+// Rocweb check
 const rocwebPreview = document.getElementById("rocweb-preview-container");
-
-fetch("http://rocrail:8080", { method: "HEAD", mode: "no-cors" })
-  .then(() => {
-    rocwebPreview.innerHTML = `
-      <h5>🛤️ Mini-Stellpult (Live-Vorschau)</h5>
-      <iframe src="http://rocrail:8080"
-              width="100%" height="400"
-              style="border:1px solid #ccc; border-radius:8px;"></iframe>
-      <p class="text-success small mt-2">
-        ✅ Rocweb-Webserver läuft auf Port <strong>8080</strong>.
-      </p>
-    `;
-  })
-  .catch(() => {
-    rocwebPreview.innerHTML = `
-      <p class="text-danger">
-        ⚠️ Rocweb-Webserver ist nicht erreichbar.<br>
-        Bitte stelle sicher, dass Rocweb auf Port <strong>8080</strong> läuft.<br>
-        Manuell testen: <a href="http://rocrail:8080" target="_blank">http://rocrail:8080/</a>
-      </p>
-    `;
-  });
+fetch("http://rocrail:8080",{method:"HEAD",mode:"no-cors"})
+  .then(()=>{rocwebPreview.innerHTML=`<h5>🛤️ Mini-Stellpult</h5><iframe src="http://rocrail:8080" width="100%" height="400"></iframe>`;})
+  .catch(()=>{rocwebPreview.innerHTML=`<p class="text-danger">⚠️ Rocweb-Webserver nicht erreichbar</p>`;});
 </script>
 </body>
 </html>
