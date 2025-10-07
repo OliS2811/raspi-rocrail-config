@@ -1,4 +1,9 @@
 #!/bin/bash
+# --- Root-Fix: Wenn nicht root, führe Skript mit sudo neu aus ---
+if [ "$EUID" -ne 0 ]; then
+  sudo bash "$0" "$@"
+  exit
+fi
 # ==========================================================
 # 🚂 Add-On: Lok- & Wagenwartung für Rocrail Webinterface
 # Autor: Olli / 2025

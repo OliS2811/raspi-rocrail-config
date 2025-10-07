@@ -5,7 +5,7 @@ $repoDir = "/home/pi/Documents/Rocrail";   // Ordner, in dem plan.xml liegt
 header("Content-Type: text/plain");
 
 // ------------------------------------------------------------
-// 🧩 Automatisches Sudo-Setup für Rocrail Webinterface
+// 🧩 Vollautomatisches Sudo-Setup für Rocrail Webinterface
 // ------------------------------------------------------------
 $SUDO_FILE = "/etc/sudoers.d/rocrail-web";
 
@@ -27,18 +27,36 @@ www-data ALL=(pi) NOPASSWD: \
 /usr/local/bin/*_addon.sh, \
 /usr/local/share/rocrail-addons/*_addon.sh, \
 /var/www/html/addons/*_addon.sh, \
-/var/www/html/*_addon.sh
+/var/www/html/*_addon.sh, \
+/var/www/html/punkt*.sh, \
+/home/pi/Rocrail/startrocrail.sh, \
+/var/www/html/stoprocrail.sh, \
+/usr/local/bin/set_samba_pass.sh
 Defaults:www-data !requiretty
 EOT;
 
-    // Regel als temporäre Datei ablegen
     file_put_contents("/tmp/rocrail-web", $sudoRules);
-
-    // und mit sudo ins System kopieren
     shell_exec("sudo cp /tmp/rocrail-web /etc/sudoers.d/rocrail-web && sudo chmod 440 /etc/sudoers.d/rocrail-web");
-
-    echo "✅ Sudo-Regeln eingerichtet.\n";
+    echo "✅ Sudo-Regeln automatisch eingerichtet.\n";
 }
+
+// === Addon Installation ===
+if (isset($_POST['addon_id']) && isset($_POST['script_url'])) {
+    $addon = escapeshellarg($_POST['addon_id']);
+    $url   = escapeshellarg($_POST['script_url']);
+    $tmp   = "/tmp/${addon}.sh";
+
+    echo "📥 Lade Addon-Skript von $url...\n";
+    passthru("wget -qO $tmp $url && chmod +x $tmp && sudo -u pi bash $tmp 2>&1", $ret);
+
+    if ($ret === 0) {
+        echo "\n✅ Addon $addon erfolgreich installiert.";
+    } else {
+        echo "\n❌ Fehler bei Installation von $addon.";
+    }
+    exit;
+}
+
 
 // === Addon Installation ===
 if (isset($_POST['addon_id']) && isset($_POST['script_url'])) {
