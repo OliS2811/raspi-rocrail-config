@@ -46,6 +46,16 @@
       font-size: 1.08em;
       white-space: pre-wrap;
     }
+    #sudoStatus {
+      font-size: 0.9em;
+      text-align: center;
+      margin-top: 15px;
+    }
+    #sudoStatus span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
     @media (max-width: 600px) {
       .btn-menu { min-width: 160px; font-size: 0.97em;}
     }
@@ -139,12 +149,28 @@
     </div>
   </div>
 
+  <!-- Addons -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <strong>🧩 Addons</strong>
+      <div id="addons-list">
+        <p class="text-muted">🔍 Lade verfügbare Addons...</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Rocweb Preview -->
   <div class="card shadow-sm mt-4">
     <div class="card-body" id="rocweb-preview-container">
       <p class="text-muted">🔍 Prüfe Rocrail-Webserver-Verfügbarkeit…</p>
     </div>
   </div>
+
+  <!-- Sudo Status -->
+  <div id="sudoStatus" class="text-center text-muted small mt-3">
+    <span>🔍 Prüfe Systemstatus...</span>
+  </div>
+
 </div>
 
 <!-- Spinner -->
@@ -213,6 +239,70 @@ fetch('git_check.php')
       `;
     }
   });
+
+// Addons laden
+fetch('https://raw.githubusercontent.com/OliS2811/raspi-rocrail-config/master/rocrail-addons/addons.json')
+  .then(res => res.json())
+  .then(data => {
+    const list = document.getElementById("addons-list");
+    list.innerHTML = "";
+    data.addons.forEach(addon => {
+      const div = document.createElement("div");
+      div.className = "mb-2";
+      div.innerHTML = `
+        <div class="border rounded p-2 mb-2 bg-light">
+          <b>${addon.name}</b><br>
+          <span class="small text-muted">${addon.description}</span><br>
+          <button class="btn btn-sm btn-success mt-1"
+            onclick="installAddon('${addon.id}','${addon.script_url}')">
+            ➕ Installieren
+          </button>
+        </div>`;
+      list.appendChild(div);
+    });
+  })
+  .catch(err => {
+    document.getElementById("addons-list").innerHTML =
+      "<p class='text-danger'>⚠️ Konnte Addons nicht laden.</p>";
+  });
+
+// Sudo-Status prüfen
+fetch('sudo_check.php')
+  .then(r => r.json())
+  .then(d => {
+    const el = document.getElementById("sudoStatus");
+    if (d.content_valid) {
+      el.innerHTML = `<span style="color:green;">🟢 ${d.message}</span>`;
+    } else if (d.file_exists) {
+      el.innerHTML = `<span style="color:#b58900;">🟡 ${d.message}</span>`;
+    } else {
+      el.innerHTML = `<span style="color:red;">🔴 ${d.message}</span>`;
+    }
+  })
+  .catch(() => {
+    document.getElementById("sudoStatus").innerHTML = "<span style='color:red;'>❌ Fehler beim Prüfen der Rechte.</span>";
+  });
+
+function installAddon(id, url) {
+  const output = document.getElementById("output");
+  showSpinner(true);
+  output.innerHTML = `📦 Installiere Addon <b>${id}</b>...`;
+
+  fetch('run.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'addon_id=' + encodeURIComponent(id) + '&script_url=' + encodeURIComponent(url)
+  })
+  .then(res => res.text())
+  .then(txt => {
+    showSpinner(false);
+    output.innerHTML = txt;
+  })
+  .catch(err => {
+    showSpinner(false);
+    output.innerHTML = "❌ Fehler beim Installieren: " + err;
+  });
+}
 
 function showSpinner(show=true) {
   document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
