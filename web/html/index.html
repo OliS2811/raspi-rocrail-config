@@ -7,58 +7,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    body {
-      padding: 30px 0;
-      background: #f2f5fa;
-    }
-    .rocrail-header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .rocrail-header h2 {
-      margin-bottom: 0;
-      color: #1a355e;
-      letter-spacing: 1px;
-      font-weight: 600;
-    }
-    .rocrail-header img {
-      width: 48px; margin-bottom: 8px;
-    }
-    .card {
-      margin-bottom: 20px;
-      border-radius: 10px;
-    }
-    .btn-menu {
-      min-width: 330px;
-      text-align: left;
-      font-family: monospace;
-      margin-bottom: 10px;
-      white-space: normal;
-    }
-    #output {
-      background: #181a20;
-      color: #8cffb5;
-      min-height: 80px;
-      padding: 18px;
-      border-radius: 8px;
-      margin-top: 12px;
-      font-family: monospace;
-      font-size: 1.08em;
-      white-space: pre-wrap;
-    }
-    #sudoStatus {
-      font-size: 0.9em;
-      text-align: center;
-      margin-top: 15px;
-    }
-    #sudoStatus span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    @media (max-width: 600px) {
-      .btn-menu { min-width: 160px; font-size: 0.97em;}
-    }
+    body { padding:30px 0; background:#f2f5fa; }
+    .rocrail-header { text-align:center; margin-bottom:30px; }
+    .rocrail-header h2 { margin-bottom:0; color:#1a355e; letter-spacing:1px; font-weight:600; }
+    .rocrail-header img { width:48px; margin-bottom:8px; }
+    .card { margin-bottom:20px; border-radius:10px; }
+    .btn-menu { min-width:330px; text-align:left; font-family:monospace; margin-bottom:10px; white-space:normal; }
+    #output { background:#181a20; color:#8cffb5; min-height:80px; padding:18px; border-radius:8px; margin-top:12px; font-family:monospace; font-size:1.08em; white-space:pre-wrap; }
+    #sudoStatus { font-size:0.9em; text-align:center; margin-top:15px; }
+    #sudoStatus span { display:inline-flex; align-items:center; gap:6px; }
+    @media(max-width:600px){ .btn-menu{min-width:160px;font-size:0.97em;} }
   </style>
 </head>
 <body>
@@ -77,35 +35,15 @@
       <strong>🔌 WLAN einrichten</strong>
       <form id="wlanForm" class="row g-2 align-items-center mt-2">
         <div class="col-auto flex-grow-1">
-          <input type="text" class="form-control form-control-sm" id="ssid" name="ssid" placeholder="SSID" required>
+          <input type="text" class="form-control form-control-sm" id="ssid" placeholder="SSID" required>
         </div>
         <div class="col-auto flex-grow-1">
-          <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="Passwort" required>
+          <input type="password" class="form-control form-control-sm" id="password" placeholder="Passwort" required>
         </div>
         <div class="col-auto">
           <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-wifi"></i> WLAN einrichten</button>
         </div>
-        <div class="col-auto">
-          <span id="wlanStatus" class="text-muted small"></span>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Samba -->
-  <div class="card shadow-sm" id="sambaBox" style="display: none;">
-    <div class="card-body">
-      <strong>🔐 Samba-Passwort setzen</strong>
-      <form id="sambaForm" class="row g-2 align-items-center mt-2">
-        <div class="col-auto flex-grow-1">
-          <input type="password" class="form-control form-control-sm" id="sambaPass" placeholder="Neues Passwort" required>
-        </div>
-        <div class="col-auto">
-          <button type="submit" class="btn btn-sm btn-secondary"><i class="fas fa-key"></i> Passwort setzen</button>
-        </div>
-        <div class="col-auto">
-          <span id="sambaStatus" class="text-muted small"></span>
-        </div>
+        <div class="col-auto"><span id="wlanStatus" class="text-muted small"></span></div>
       </form>
     </div>
   </div>
@@ -156,22 +94,19 @@
       <div id="addons-list">
         <p class="text-muted">🔍 Lade verfügbare Addons...</p>
       </div>
-      <div id="addon-status" class="mt-3 text-center small text-muted"></div>
     </div>
   </div>
 
-  <!-- Rocweb Preview -->
+  <!-- Rocweb -->
   <div class="card shadow-sm mt-4">
     <div class="card-body" id="rocweb-preview-container">
       <p class="text-muted">🔍 Prüfe Rocrail-Webserver-Verfügbarkeit…</p>
     </div>
   </div>
 
-  <!-- Sudo Status -->
   <div id="sudoStatus" class="text-center text-muted small mt-3">
     <span>🔍 Prüfe Systemstatus...</span>
   </div>
-
 </div>
 
 <!-- Spinner -->
@@ -184,20 +119,125 @@
 </div>
 
 <script>
-fetch('wartung_check.php')
-  .then(r => r.json())
-  .then(data => {
-    const el = document.getElementById("addon-status");
-    if (data.installed) {
-      el.innerHTML = `<span class="text-success fw-bold">🟢 Lok- & Wagenwartung installiert</span><br>
-      <a href="wartung.php" class="btn btn-sm btn-outline-success mt-1">🚂 Wartung öffnen</a>`;
-    } else {
-      el.innerHTML = `<span class="text-muted">⚙️ Lok- & Wagenwartung noch nicht installiert</span>`;
-    }
-  })
-  .catch(() => {
-    document.getElementById("addon-status").innerHTML = "<span class='text-danger'>❌ Fehler beim Prüfen des Wartungs-Addons</span>";
+// --- WLAN ---
+fetch('wlan_status.php').then(r=>r.text()).then(t=>{
+  const el=document.getElementById("wlanStatus"); if(el&&t.length>0) el.textContent=t;
+});
+
+// --- Samba ---
+fetch('samba_check.php').then(r=>r.json()).then(d=>{
+  if(d.samba_installed) document.getElementById('sambaBox').style.display='block';
+});
+
+// --- Git ---
+fetch('git_check.php').then(r=>r.json()).then(d=>{
+  const box=document.getElementById("gitBox");
+  if(d.installed){
+    box.innerHTML=`
+      <strong><i class="fa-solid fa-code-branch"></i> Git & Changelog</strong>
+      <div class="row g-2 mt-2">
+        <div class="col-12 col-md-9"><input type="text" class="form-control form-control-sm" id="commitMsg" placeholder="Änderungsbeschreibung"></div>
+        <div class="col-12 col-md-3"><button class="btn btn-sm btn-success w-100" onclick="gitCommit()">💾 Speichern</button></div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-6"><button class="btn btn-sm btn-outline-primary w-100" onclick="gitPush()">🚀 Push</button></div>
+        <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" onclick="gitShowLog()">📜 Log</button></div>
+      </div>
+      <div id="gitOutput" class="mt-3 small text-monospace"></div>`;
+  } else {
+    box.innerHTML=`
+      <strong>📂 Git-Support (optional)</strong>
+      <p class="text-muted small">Mit Git kannst du Änderungen an <code>plan.xml</code> versionieren und bei GitHub sichern.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="git_info.html" target="_blank" class="btn btn-outline-info">ℹ️ Mehr erfahren</a>
+        <button class="btn btn-outline-success" onclick="installGitSupport()">🚀 Git-Support installieren</button>
+      </div>`;
+  }
+});
+
+// --- Addons ---
+fetch('https://raw.githubusercontent.com/OliS2811/raspi-rocrail-config/master/rocrail-addons/addons.json')
+.then(res=>res.json()).then(data=>{
+  const list=document.getElementById("addons-list"); list.innerHTML="";
+  data.addons.forEach(a=>{
+    const div=document.createElement("div");
+    div.className="mb-2";
+    div.innerHTML=`
+      <div class="border rounded p-2 mb-2 bg-light">
+        <b>${a.name}</b><br>
+        <span class="small text-muted">${a.description}</span><br>
+        <button class="btn btn-sm btn-success mt-1" onclick="installAddon('${a.id}','${a.script_url}')">➕ Installieren</button>
+      </div>`;
+    list.appendChild(div);
   });
+}).catch(()=>{document.getElementById("addons-list").innerHTML="<p class='text-danger'>⚠️ Konnte Addons nicht laden.</p>";});
+
+// --- Sudo-Status ---
+fetch('sudo_check.php').then(r=>r.json()).then(d=>{
+  const el=document.getElementById("sudoStatus");
+  if(d.content_valid) el.innerHTML=`<span style="color:green;">🟢 ${d.message}</span>`;
+  else if(d.file_exists) el.innerHTML=`<span style="color:#b58900;">🟡 ${d.message}</span>`;
+  else el.innerHTML=`<span style="color:red;">🔴 ${d.message}</span>`;
+}).catch(()=>{document.getElementById("sudoStatus").innerHTML="<span style='color:red;'>❌ Fehler beim Prüfen der Rechte.</span>";});
+
+// --- Rocweb ---
+const roc=document.getElementById("rocweb-preview-container");
+fetch("http://rocrail:8080",{method:"HEAD",mode:"no-cors"})
+.then(()=>{roc.innerHTML=`<h5>🛤️ Mini-Stellpult</h5><iframe src="http://rocrail:8080" width="100%" height="400"></iframe>`;})
+.catch(()=>{roc.innerHTML=`<p class="text-danger">⚠️ Rocweb-Webserver nicht erreichbar</p>`;});
+
+function installAddon(id,url){
+  const out=document.getElementById("output");
+  showSpinner(true);
+  out.innerHTML=`📦 Installiere Addon <b>${id}</b>...`;
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'addon_id='+encodeURIComponent(id)+'&script_url='+encodeURIComponent(url)})
+  .then(r=>r.text()).then(t=>{showSpinner(false);out.innerHTML=t;})
+  .catch(e=>{showSpinner(false);out.innerHTML="❌ Fehler beim Installieren: "+e;});
+}
+
+function showSpinner(s=true){document.getElementById('loadingSpinner').style.display=s?'flex':'none';}
+
+function runScript(p){
+  const out=document.getElementById("output");
+  showSpinner(true);
+  out.innerHTML="<span style='color:orange;'>Bitte warten...</span>";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'punkt='+p})
+  .then(r=>r.text()).then(d=>{
+    showSpinner(false);
+    if(d.trim()==='[RELOAD]'){out.innerHTML="<span style='color:green;'>🔄 Seite wird neu geladen...</span>";setTimeout(()=>location.reload(true),1500);}
+    else{out.innerHTML=d;setTimeout(()=>{out.innerHTML="";},30000);}
+  }).catch(e=>{showSpinner(false);out.innerHTML="Fehler: "+e;});
+}
+
+function installGitSupport(){
+  const out=document.getElementById("gitBox");
+  showSpinner(true);
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=install'})
+  .then(r=>r.text()).then(t=>{showSpinner(false);out.innerHTML="<pre>"+t+"</pre>";})
+  .catch(e=>{showSpinner(false);out.innerHTML="Fehler: "+e;});
+}
+
+function gitCommit(){
+  const msg=document.getElementById('commitMsg').value;
+  const out=document.getElementById('gitOutput');
+  out.textContent="Bitte warten…";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=commit&commit_msg='+encodeURIComponent(msg)})
+  .then(r=>r.text()).then(t=>out.textContent=t).catch(e=>out.textContent="Fehler: "+e);
+}
+
+function gitPush(){
+  const out=document.getElementById('gitOutput');
+  out.textContent="Bitte warten…";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=push'})
+  .then(r=>r.text()).then(t=>out.textContent=t).catch(e=>out.textContent="Fehler: "+e);
+}
+
+function gitShowLog(){
+  const out=document.getElementById('gitOutput');
+  out.textContent="Bitte warten…";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=showlog'})
+  .then(r=>r.text()).then(t=>out.textContent=t).catch(e=>out.textContent="Fehler: "+e);
+}
 </script>
 </body>
 </html>

@@ -40,42 +40,45 @@ EOT;
     echo "✅ Sudo-Regeln automatisch eingerichtet.\n";
 }
 
-// === Addon Installation ===
+// ------------------------------------------------------------
+// 🧩 Add-on Installation mit Root-Fallback
+// ------------------------------------------------------------
 if (isset($_POST['addon_id']) && isset($_POST['script_url'])) {
-    $addon = escapeshellarg($_POST['addon_id']);
-    $url   = escapeshellarg($_POST['script_url']);
-    $tmp   = "/tmp/${addon}.sh";
+    $addonId = $_POST['addon_id'];
+    $addon   = escapeshellarg($addonId);
+    $url     = escapeshellarg($_POST['script_url']);
+    $tmp     = "/tmp/${addonId}.sh";
 
     echo "📥 Lade Addon-Skript von $url...\n";
+
+    // Erster Versuch – normal als Benutzer pi
     passthru("wget -qO $tmp $url && chmod +x $tmp && sudo -u pi bash $tmp 2>&1", $ret);
 
+    // Wenn fehlgeschlagen oder Datei nicht existiert → Root-Fallback
+    if (!file_exists($tmp) || $ret !== 0) {
+        echo "\n⚠️ Erster Versuch fehlgeschlagen – wiederhole mit Root-Rechten...\n";
+        passthru("sudo wget -qO $tmp $url && sudo chmod +x $tmp && sudo bash $tmp 2>&1", $ret2);
+
+        if ($ret2 === 0) {
+            echo "\n✅ Addon '{$addonId}' erfolgreich installiert (via Root-Fallback).";
+            exit;
+        } else {
+            echo "\n❌ Fehler bei Installation von '{$addonId}' (beide Versuche fehlgeschlagen).";
+            exit;
+        }
+    }
+
     if ($ret === 0) {
-        echo "\n✅ Addon $addon erfolgreich installiert.";
+        echo "\n✅ Addon '{$addonId}' erfolgreich installiert.";
     } else {
-        echo "\n❌ Fehler bei Installation von $addon.";
+        echo "\n❌ Fehler bei Installation von '{$addonId}'.";
     }
     exit;
 }
 
-
-// === Addon Installation ===
-if (isset($_POST['addon_id']) && isset($_POST['script_url'])) {
-    $addon = escapeshellarg($_POST['addon_id']);
-    $url   = escapeshellarg($_POST['script_url']);
-    $tmp   = "/tmp/${addon}.sh";
-
-    echo "📥 Lade Addon-Skript von $url...\n";
-    passthru("wget -qO $tmp $url && chmod +x $tmp && sudo -u pi bash $tmp 2>&1", $ret);
-
-    if ($ret === 0) {
-        echo "\n✅ Addon $addon erfolgreich installiert.";
-    } else {
-        echo "\n❌ Fehler bei Installation von $addon.";
-    }
-    exit;
-}
-
-// === Git & Changelog Aktionen ===
+// ------------------------------------------------------------
+// 🧩 Git & Changelog Aktionen
+// ------------------------------------------------------------
 if (isset($_POST['git_action'])) {
     $action = $_POST['git_action'];
 
@@ -100,7 +103,6 @@ if (isset($_POST['git_action'])) {
 
     if ($action === "showlog") {
         header("Content-Type: text/plain; charset=UTF-8");
-        // Ausgabe: Hash | Datum | Autor | Nachricht
         $log = shell_exec("cd $repoDir && sudo -u pi git --no-pager log --pretty=format:'%h | %ad | %an | %s' --date=short -n 20 2>&1");
         echo $log;
         exit;
@@ -111,7 +113,9 @@ if (isset($_POST['git_action'])) {
     exit;
 }
 
-// === Klassische Menü-Punkte 0–16 ===
+// ------------------------------------------------------------
+// 🧩 Klassische Menü-Punkte 0–16
+// ------------------------------------------------------------
 if (isset($_POST['punkt'])) {
     $punkt = intval($_POST['punkt']);
 
@@ -134,7 +138,9 @@ if (isset($_POST['punkt'])) {
     exit;
 }
 
-// === Fallback ===
+// ------------------------------------------------------------
+// 🧩 Fallback
+// ------------------------------------------------------------
 http_response_code(400);
 echo "Keine Aktion übergeben.";
 ?>
