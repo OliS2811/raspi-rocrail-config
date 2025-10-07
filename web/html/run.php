@@ -4,6 +4,42 @@ $repoDir = "/home/pi/Documents/Rocrail";   // Ordner, in dem plan.xml liegt
 
 header("Content-Type: text/plain");
 
+// ------------------------------------------------------------
+// 🧩 Automatisches Sudo-Setup für Rocrail Webinterface
+// ------------------------------------------------------------
+$SUDO_FILE = "/etc/sudoers.d/rocrail-web";
+
+if (!file_exists($SUDO_FILE)) {
+    echo "🔧 Erstelle fehlende Sudo-Regeln für Rocrail Webinterface...\n";
+
+    $sudoRules = <<<EOT
+# Rocrail Webinterface – automatische Sudoer-Regeln
+www-data ALL=(pi) NOPASSWD: \
+/usr/bin/git, \
+/usr/bin/curl, \
+/usr/bin/wget, \
+/usr/bin/chmod, \
+/usr/bin/chown, \
+/usr/bin/mkdir, \
+/usr/bin/rm, \
+/usr/bin/mv, \
+/usr/bin/cp, \
+/usr/local/bin/*_addon.sh, \
+/usr/local/share/rocrail-addons/*_addon.sh, \
+/var/www/html/addons/*_addon.sh, \
+/var/www/html/*_addon.sh
+Defaults:www-data !requiretty
+EOT;
+
+    // Regel als temporäre Datei ablegen
+    file_put_contents("/tmp/rocrail-web", $sudoRules);
+
+    // und mit sudo ins System kopieren
+    shell_exec("sudo cp /tmp/rocrail-web /etc/sudoers.d/rocrail-web && sudo chmod 440 /etc/sudoers.d/rocrail-web");
+
+    echo "✅ Sudo-Regeln eingerichtet.\n";
+}
+
 // === Addon Installation ===
 if (isset($_POST['addon_id']) && isset($_POST['script_url'])) {
     $addon = escapeshellarg($_POST['addon_id']);
