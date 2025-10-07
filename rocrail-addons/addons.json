@@ -5,6 +5,13 @@
       "name": "Git + Changelog",
       "description": "Versioniere deine plan.xml mit Git und pushe Änderungen zu GitHub.",
       "script_url": "https://raw.githubusercontent.com/OliS2811/raspi-rocrail-config/master/rocrail-addons/git_support_addon.sh"
+    },
+    {
+      "id": "wartung",
+      "name": "Lok- & Wagenwartung",
+      "description": "Zeigt Rocrail-Loks und Wagen mit Wartungsdaten an. Nur lesender Zugriff auf loks.xml, mit eigener wartung.json-Verwaltung.",
+      "script_url": "https://raw.githubusercontent.com/OliS2811/raspi-rocrail-config/master/rocrail-addons/wartung_addon.sh"
     }
   ]
 }
+
