@@ -1,33 +1,41 @@
 <?php
-header('Content-Type: application/json');
+// =============================================================
+// 🚂 Wartung: Liste abrufen
+// Liest loks.xml und kombiniert sie mit wartung.json
+// =============================================================
+header('Content-Type: application/json; charset=utf-8');
 
-$loks_xml = '/home/pi/Documents/Rocrail/loks.xml';
-$wartung_json = __DIR__ . '/../data/wartung.json';
+$loksFile = '/home/pi/Documents/Rocrail/loks.xml';
+$wartungFile = '/var/www/html/data/wartung.json';
 
-if (!file_exists($loks_xml)) {
-  echo json_encode(["error" => "loks.xml nicht gefunden"]);
-  exit;
-}
-
-$xml = simplexml_load_file($loks_xml);
+// --- Lokdaten aus Rocrail ---
 $loks = [];
-foreach ($xml->lclist->lc as $lok) {
-  $id = (string)$lok['id'];
-  $addr = (string)$lok['addr'];
-  $engine = (string)$lok['engine'];
-  $runtime = round(((int)$lok['runtime']) / 3600, 1);
-  $loks[$id] = ["id"=>$id,"addr"=>$addr,"engine"=>$engine,"runtime"=>$runtime];
-}
-
-if (file_exists($wartung_json)) {
-  $wartung = json_decode(file_get_contents($wartung_json), true);
-  foreach ($wartung as $id => $data) {
-    if (isset($loks[$id])) {
-      $loks[$id]['last'] = $data['datum'];
-      $loks[$id]['comment'] = $data['text'];
+if (file_exists($loksFile)) {
+    $xml = simplexml_load_file($loksFile);
+    foreach ($xml->children() as $lok) {
+        if ($lok->getName() === 'loc' || $lok->getName() === 'car') {
+            $id = (string)$lok['id'];
+            $loks[$id] = [
+                'id'   => $id,
+                'name' => (string)$lok['desc'] ?: (string)$lok['id'],
+                'type' => ($lok->getName() === 'loc' ? 'Lok' : 'Wagen'),
+                'last_service' => '',
+                'note' => ''
+            ];
+        }
     }
-  }
 }
 
-echo json_encode(array_values($loks), JSON_PRETTY_PRINT);
-?>
+// --- Wartungsdaten kombinieren ---
+if (file_exists($wartungFile)) {
+    $custom = json_decode(file_get_contents($wartungFile), true);
+    if (is_array($custom)) {
+        foreach ($custom as $id => $info) {
+            if (!isset($loks[$id])) continue;
+            $loks[$id]['last_service'] = $info['last_service'] ?? '';
+            $loks[$id]['note'] = $info['note'] ?? '';
+        }
+    }
+}
+
+echo json_encode(array_values($loks), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

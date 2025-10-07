@@ -1,23 +1,29 @@
 <?php
-$wartung_json = __DIR__ . '/../data/wartung.json';
+// =============================================================
+// 🚂 Wartung: Änderungen speichern
+// Schreibt nur wartung.json (nie loks.xml!)
+// =============================================================
+header('Content-Type: text/plain; charset=utf-8');
+$wartungFile = '/var/www/html/data/wartung.json';
 
-$lok   = $_POST['lok']   ?? '';
-$datum = $_POST['datum'] ?? '';
-$text  = $_POST['text']  ?? '';
-
-if (!$lok || !$datum || !$text) {
-  echo "❌ Ungültige Eingabe.";
-  exit;
+$input = json_decode(file_get_contents('php://input'), true);
+if (!is_array($input)) {
+    http_response_code(400);
+    echo "Ungültige Eingabedaten.";
+    exit;
 }
 
-if (file_exists($wartung_json)) {
-  $data = json_decode(file_get_contents($wartung_json), true);
-} else {
-  $data = [];
+$current = file_exists($wartungFile)
+    ? json_decode(file_get_contents($wartungFile), true)
+    : [];
+
+if (!is_array($current)) $current = [];
+
+foreach ($input as $id => $entry) {
+    $current[$id]['last_service'] = $entry['last_service'] ?? '';
+    $current[$id]['note'] = $entry['note'] ?? '';
 }
 
-$data[$lok] = ["datum"=>$datum, "text"=>$text];
-file_put_contents($wartung_json, json_encode($data, JSON_PRETTY_PRINT));
-
-echo "✅ Wartung für $lok gespeichert.";
-?>
+file_put_contents($wartungFile, json_encode($current, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+chmod($wartungFile, 0664);
+echo "Änderungen gespeichert.";
