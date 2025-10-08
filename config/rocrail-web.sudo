@@ -1,0 +1,21 @@
+# Rocrail Webinterface – automatische Sudoer-Regeln
+www-data ALL=(pi) NOPASSWD: \
+/usr/bin/git, \
+/usr/bin/curl, \
+/usr/bin/wget, \
+/usr/bin/rsync, \
+/usr/bin/chmod, \
+/usr/bin/chown, \
+/usr/bin/mkdir, \
+/usr/bin/rm, \
+/usr/bin/mv, \
+/usr/bin/cp, \
+/usr/local/bin/*_addon.sh, \
+/usr/local/share/rocrail-addons/*_addon.sh, \
+/var/www/html/addons/*_addon.sh, \
+/var/www/html/*_addon.sh, \
+/var/www/html/punkt*.sh, \
+/home/pi/Rocrail/startrocrail.sh, \
+/var/www/html/stoprocrail.sh, \
+/usr/local/bin/set_samba_pass.sh
+Defaults:www-data !requiretty
