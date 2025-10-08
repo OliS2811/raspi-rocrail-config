@@ -1,31 +1,230 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Rocrail Web-Konfiguration</title>
+  <meta charset="UTF-8">
+  <title>Rocrail Webinterface</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { padding:30px 0; background:#f2f5fa; }
+    .rocrail-header { text-align:center; margin-bottom:30px; }
+    .rocrail-header h2 { margin-bottom:0; color:#1a355e; letter-spacing:1px; font-weight:600; }
+    .rocrail-header img { width:48px; margin-bottom:8px; }
+    .card { margin-bottom:20px; border-radius:10px; }
+    .btn-menu { min-width:330px; text-align:left; font-family:monospace; margin-bottom:10px; white-space:normal; }
+    #output { background:#181a20; color:#8cffb5; min-height:80px; padding:18px; border-radius:8px; margin-top:12px; font-family:monospace; font-size:1.08em; white-space:pre-wrap; }
+    #sudoStatus { font-size:0.9em; text-align:center; margin-top:15px; }
+    #sudoStatus span { display:inline-flex; align-items:center; gap:6px; }
+    @media(max-width:600px){ .btn-menu{min-width:160px;font-size:0.97em;} }
+  </style>
 </head>
 <body>
-    <h1>Rocrail Webinterface (PHP)</h1>
-    <form method="post">
-        <?php
-        for ($i = 0; $i <= 16; $i++) {
-            echo "<button name='action' value='punkt{$i}'>${i}) Menüpunkt ${i}</button><br>";
-        }
-        ?>
-    </form>
-    <pre>
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $allowed = range(0, 16);
-    $action = str_replace("punkt", "", $_POST['action']);
-    if (in_array((int)$action, $allowed)) {
-        $script = escapeshellcmd("/var/www/html/punkt${action}.sh");
-        echo shell_exec("sudo -u pi $script");
-    } else {
-        echo "Ungültiger Menüpunkt.";
-    }
+
+<div class="rocrail-header">
+  <img src="https://www.rocrail.net/rocrail-logo.png" alt="Rocrail" onerror="this.style.display='none'">
+  <h2>Rocrail Webinterface</h2>
+  <p class="lead text-secondary">Steuere deinen Rocrail-Raspberry jetzt noch bequemer!</p>
+</div>
+
+<div class="container" style="max-width:700px">
+
+  <!-- WLAN -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <strong>🔌 WLAN einrichten</strong>
+      <form id="wlanForm" class="row g-2 align-items-center mt-2">
+        <div class="col-auto flex-grow-1">
+          <input type="text" class="form-control form-control-sm" id="ssid" placeholder="SSID" required>
+        </div>
+        <div class="col-auto flex-grow-1">
+          <input type="password" class="form-control form-control-sm" id="password" placeholder="Passwort" required>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-wifi"></i> WLAN einrichten</button>
+        </div>
+        <div class="col-auto"><span id="wlanStatus" class="text-muted small"></span></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Aktionen -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <strong>⚙️ Aktionen</strong>
+      <div id="buttons" class="row g-2 mt-2">
+        <div class="col-12 col-sm-6">
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(0)"><b>0)</b> Den Raspi für Rocrail vorbereiten (Wichtig)</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(1)"><b>1)</b> Rocrail installieren (architekturabhängig)</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(2)"><b>2)</b> Rocrail starten</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(3)"><b>3)</b> Rocrail stoppen</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(4)"><b>4)</b> Rocrail Status anzeigen</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(5)"><b>5)</b> Rocrail Backup erstellen</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(6)"><b>6)</b> Rocrail aktualisieren</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="runScript(7)"><b>7)</b> Raspberry Pi OS updaten</button>
+        </div>
+        <div class="col-12 col-sm-6">
+          <button class="btn btn-menu btn-outline-danger" onclick="runScript(8)"><b>8)</b> System neu starten</button>
+          <button class="btn btn-menu btn-outline-warning" onclick="runScript(9)"><b>9)</b> Seite neu laden</button>
+          <button class="btn btn-menu btn-outline-info" onclick="runScript(10)"><b>10)</b> Rocrail mit Wiki-Demo starten</button>
+          <button class="btn btn-menu btn-outline-success" onclick="runScript(11)"><b>11)</b> WLAN einrichten</button>
+          <button class="btn btn-menu btn-outline-secondary" onclick="runScript(12)"><b>12)</b> Rocrail im Benutzer-Modus starten</button>
+          <button class="btn btn-menu btn-outline-secondary" onclick="runScript(13)"><b>13)</b> Rocrail Autostart (Crontab) einrichten</button>
+          <button class="btn btn-menu btn-outline-dark" onclick="runScript(14)"><b>14)</b> Samba Freigaben einrichten</button>
+          <button class="btn btn-menu btn-outline-dark" onclick="runScript(15)"><b>15)</b> Samba-Passwort für pi setzen</button>
+          <button class="btn btn-menu btn-outline-dark" onclick="runScript(16)"><b>16)</b> Raspberry herunterfahren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="output" class="shadow-sm"></div>
+
+  <!-- Git Box -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body" id="gitBox">
+      <p class="text-muted small">🔍 Prüfe Git-Status…</p>
+    </div>
+  </div>
+
+  <!-- Addons -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <strong>🧩 Addons</strong>
+      <div id="addons-list">
+        <p class="text-muted">🔍 Lade verfügbare Addons...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rocweb -->
+  <div class="card shadow-sm mt-4">
+    <div class="card-body" id="rocweb-preview-container">
+      <p class="text-muted">🔍 Prüfe Rocrail-Webserver-Verfügbarkeit…</p>
+    </div>
+  </div>
+
+  <div id="sudoStatus" class="text-center text-muted small mt-3">
+    <span>🔍 Prüfe Systemstatus...</span>
+  </div>
+</div>
+
+<!-- Spinner -->
+<div id="loadingSpinner" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div class="d-flex justify-content-center align-items-center" style="height:100vh;">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status">
+      <span class="visually-hidden">Bitte warten...</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- WLAN ---
+fetch('wlan_status.php').then(r=>r.text()).then(t=>{
+  const el=document.getElementById("wlanStatus"); if(el&&t.length>0) el.textContent=t;
+});
+
+// --- Git ---
+fetch('git_check.php').then(r=>r.json()).then(d=>{
+  const box=document.getElementById("gitBox");
+  if(d.installed){
+    box.innerHTML=`
+      <strong><i class="fa-solid fa-code-branch"></i> Git & Changelog</strong>
+      <div class="row g-2 mt-2">
+        <div class="col-12 col-md-9"><input type="text" class="form-control form-control-sm" id="commitMsg" placeholder="Änderungsbeschreibung"></div>
+        <div class="col-12 col-md-3"><button class="btn btn-sm btn-success w-100" onclick="gitCommit()">💾 Speichern</button></div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-6"><button class="btn btn-sm btn-outline-primary w-100" onclick="gitPush()">🚀 Push</button></div>
+        <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" onclick="gitShowLog()">📜 Log</button></div>
+      </div>
+      <div id="gitOutput" class="mt-3 small text-monospace"></div>`;
+  } else {
+    box.innerHTML=`
+      <strong>📂 Git-Support (optional)</strong>
+      <p class="text-muted small">Mit Git kannst du Änderungen an <code>plan.xml</code> versionieren und bei GitHub sichern.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="git_info.html" target="_blank" class="btn btn-outline-info">ℹ️ Mehr erfahren</a>
+        <button class="btn btn-outline-success" onclick="installAddon('git_support','https://raw.githubusercontent.com/OliS2811/raspi-rocrail-config/master/rocrail-addons/git_support_addon.sh')">🚀 Git-Support installieren</button>
+      </div>`;
+  }
+});
+
+// --- Addons ---
+fetch('https://raw.githubusercontent.com/OliS2811/raspi-rocrail-config/master/rocrail-addons/addons.json')
+.then(res=>res.json()).then(data=>{
+  const list=document.getElementById("addons-list"); list.innerHTML="";
+  data.addons.forEach(a=>{
+    const div=document.createElement("div");
+    div.className="mb-2";
+    div.innerHTML=`
+      <div class="border rounded p-2 mb-2 bg-light">
+        <b>${a.name}</b><br>
+        <span class="small text-muted">${a.description}</span><br>
+        <button class="btn btn-sm btn-success mt-1" onclick="installAddon('${a.id}','${a.script_url}')">➕ Installieren</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}).catch(()=>{document.getElementById("addons-list").innerHTML="<p class='text-danger'>⚠️ Konnte Addons nicht laden.</p>";});
+
+// --- Sudo-Status ---
+fetch('sudo_check.php').then(r=>r.json()).then(d=>{
+  const el=document.getElementById("sudoStatus");
+  if(d.content_valid) el.innerHTML=`<span style="color:green;">🟢 ${d.message}</span>`;
+  else if(d.file_exists) el.innerHTML=`<span style="color:#b58900;">🟡 ${d.message}</span>`;
+  else el.innerHTML=`<span style="color:red;">🔴 ${d.message}</span>`;
+}).catch(()=>{document.getElementById("sudoStatus").innerHTML="<span style='color:red;'>❌ Fehler beim Prüfen der Rechte.</span>";});
+
+// --- Rocweb ---
+const roc=document.getElementById("rocweb-preview-container");
+fetch("http://rocrail:8080",{method:"HEAD",mode:"no-cors"})
+.then(()=>{roc.innerHTML=`<h5>🛤️ Mini-Stellpult</h5><iframe src="http://rocrail:8080" width="100%" height="400"></iframe>`;})
+.catch(()=>{roc.innerHTML=`<p class="text-danger">⚠️ Rocweb-Webserver nicht erreichbar</p>`;});
+
+function installAddon(id,url){
+  const out=document.getElementById("output");
+  showSpinner(true);
+  out.innerHTML=`📦 Installiere Addon <b>${id}</b>...`;
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'addon_id='+encodeURIComponent(id)+'&script_url='+encodeURIComponent(url)})
+  .then(r=>r.text()).then(t=>{showSpinner(false);out.innerHTML=t;})
+  .catch(e=>{showSpinner(false);out.innerHTML="❌ Fehler beim Installieren: "+e;});
 }
-?>
-    </pre>
+
+function showSpinner(s=true){document.getElementById('loadingSpinner').style.display=s?'flex':'none';}
+
+function runScript(p){
+  const out=document.getElementById("output");
+  showSpinner(true);
+  out.innerHTML="<span style='color:orange;'>Bitte warten...</span>";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'punkt='+p})
+  .then(r=>r.text()).then(d=>{
+    showSpinner(false);
+    if(d.trim()==='[RELOAD]'){out.innerHTML="<span style='color:green;'>🔄 Seite wird neu geladen...</span>";setTimeout(()=>location.reload(true),1500);}
+    else{out.innerHTML=d;setTimeout(()=>{out.innerHTML="";},30000);}
+  }).catch(e=>{showSpinner(false);out.innerHTML="Fehler: "+e;});
+}
+
+function gitCommit(){
+  const msg=document.getElementById('commitMsg').value;
+  const out=document.getElementById('gitOutput');
+  out.textContent="Bitte warten…";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=commit&commit_msg='+encodeURIComponent(msg)})
+  .then(r=>r.text()).then(t=>out.textContent=t).catch(e=>out.textContent="Fehler: "+e);
+}
+
+function gitPush(){
+  const out=document.getElementById('gitOutput');
+  out.textContent="Bitte warten…";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=push'})
+  .then(r=>r.text()).then(t=>out.textContent=t).catch(e=>out.textContent="Fehler: "+e);
+}
+
+function gitShowLog(){
+  const out=document.getElementById('gitOutput');
+  out.textContent="Bitte warten…";
+  fetch('run.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'git_action=showlog'})
+  .then(r=>r.text()).then(t=>out.textContent=t).catch(e=>out.textContent="Fehler: "+e);
+}
+</script>
 </body>
 </html>
