@@ -6,10 +6,10 @@ ARCH=$(uname -m)
 
 if [ "$ARCH" = "aarch64" ]; then
   echo "[INFO] 64-Bit System erkannt – lade ARM64-Version"
-  SNAPSHOT_URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
+  SNAPSHOT_URL="https://rocrail.online/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
 elif [ "$ARCH" = "armv7l" ]; then
   echo "[INFO] 32-Bit System erkannt – lade ARMHF-Version"
-  SNAPSHOT_URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
+  SNAPSHOT_URL="https://rocrail.online/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
 else
   echo "[FEHLER] Nicht unterstützte Architektur: $ARCH"
   exit 1
