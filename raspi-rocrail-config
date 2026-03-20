@@ -121,10 +121,10 @@ EOF
     1)
   echo "[INFO] Rocrail wird installiert..."
   if [ "$ARCH" = "aarch64" ]; then
-    URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
+    URL="https://rocrail.online/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"
     echo "[INFO] 64-Bit System erkannt – lade ARM64-Version"
   else
-    URL="https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
+    URL="https://rocrail.online/rocrail-snapshot/Rocrail-PiOS11-ARMHF.zip"
     echo "[INFO] 32-Bit System erkannt – lade ARMHF-Version"
   fi
 
