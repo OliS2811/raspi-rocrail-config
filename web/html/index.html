@@ -265,11 +265,11 @@ document.getElementById('sambaForm').addEventListener('submit', function (e) {
 // Rocweb Live-Vorschau prüfen und ggf. anzeigen
 const rocwebPreview = document.getElementById("rocweb-preview-container");
 
-fetch("http://rocrail:8080", { method: "HEAD", mode: "no-cors" })
+fetch("http://rocweb.lan:8080", { method: "HEAD", mode: "no-cors" })
   .then(() => {
     rocwebPreview.innerHTML = `
       <h5>🛤️ Mini-Stellpult (Live-Vorschau)</h5>
-      <iframe src="http://rocrail:8080"
+      <iframe src="http://rocweb.lan:8080"
               width="100%" height="400"
               style="border:1px solid #ccc; border-radius:8px;"></iframe>
       <p class="text-success small mt-2">
@@ -281,8 +281,8 @@ fetch("http://rocrail:8080", { method: "HEAD", mode: "no-cors" })
     rocwebPreview.innerHTML = `
       <p class="text-danger">
         ⚠️ Rocweb-Webserver ist nicht erreichbar.<br>
-        Bitte stelle sicher, dass Rocweb auf Port <strong>8080</strong> läuft.<br>
-        Manuell testen: <a href="http://rocrail:8080" target="_blank">http://rocrail:8080/</a>
+        Bitte stelle sicher, dass Rocrail auf Port <strong>8080</strong> läuft.<br>
+        Manuell testen: <a href="http://rocweb.lan:8080" target="_blank">http://rocweb.lan:8080/</a>
       </p>
     `;
   });

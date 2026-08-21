@@ -1,6 +1,19 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2025-06-20
+Stand: 2026-08-21
 
+Rocrail PiOS – Version 1.7
+Stand: 2026-08-21
+
+Diese Version enthält:
+- Webinterface mit dem produktiven Live-System abgeglichen und als lauffähig bestätigt
+- Bugfix: WLAN- und Samba-Formular im Webinterface funktionierten mangels JavaScript‑Handler nicht (index.html)
+- Bugfix: Rocweb‑Live‑Vorschau zeigte falschen Hostnamen (jetzt `rocweb.lan` statt `rocrail`)
+- Unfertige, nicht funktionierende Git‑Integration (Changelog‑Buttons) sowie verwaiste Dateien entfernt
+- Aktualisierte Rocrail‑Snapshot‑Download‑URLs (rocrail.online)
+- Zeilenenden‑Problem (CRLF/LF) behoben, `.gitattributes` ergänzt für konsistente LF‑Zeilenenden
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.6 
 Stand: 2025-07-04
 
