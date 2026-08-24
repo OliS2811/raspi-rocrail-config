@@ -22,12 +22,18 @@ sudo find "$WEBROOT/tmp" -type f -name ".*" -exec chmod 600 {} \;
 # Punkt-Skripte ausführbar machen (punkt0.sh bis punkt19.sh)
 sudo find "$WEBROOT" -type f -name "punkt*.sh" -exec chmod +x {} \;
 
+# Hilfsskripte für den Planänderungs-Verlauf
+sudo chmod +x "$WEBROOT/plan_commit.sh"
+sudo chmod +x "$WEBROOT/rocrail_stop.sh"
+
 # WLAN- und Samba-Hilfsskripte
 sudo chmod 755 /usr/local/bin/set_samba_pass.sh
 
 # Optional: PHP-Skripte ausführbar machen
 sudo chmod +x "$WEBROOT/save_wifi.php"
 sudo chmod +x "$WEBROOT/save_samba_pass.php"
+sudo chmod +x "$WEBROOT/save_plan_note.php"
+sudo chmod +x "$WEBROOT/save_plan_restore.php"
 sudo chmod +x "$WEBROOT/run.php"
 
 # Eigentümer ggf. auf www-data setzen (optional, kann auch entfernt werden)
