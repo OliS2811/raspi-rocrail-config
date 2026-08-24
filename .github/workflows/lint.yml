@@ -1,0 +1,46 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP-Syntaxcheck
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            php -l "$f" || fail=1
+          done < <(find . -name '*.php' -not -path './.git/*' -print0)
+          exit $fail
+
+      - name: Bash-Syntaxcheck
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || fail=1
+          done < <(find . \( -name '*.sh' -o -name 'raspi-rocrail-config' \) -not -path './.git/*' -print0)
+          exit $fail
+
+      - name: Prüfe lokale fetch()-Ziele im Webinterface
+        run: |
+          fail=0
+          while IFS= read -r -d '' file; do
+            dir=$(dirname "$file")
+            while IFS= read -r target; do
+              case "$target" in
+                http://*|https://*) continue ;;
+                /*) check="web/html${target}" ;;
+                *) check="$dir/$target" ;;
+              esac
+              if [ ! -f "$check" ]; then
+                echo "::error file=$file::fetch-Ziel nicht gefunden: $target"
+                fail=1
+              fi
+            done < <(grep -oE "fetch\('[^']+'|fetch\(\"[^\"]+\"" "$file" | sed -E "s/fetch\(['\"]//; s/['\"]\$//")
+          done < <(find web/html \( -name '*.html' -o -name '*.php' -o -name '*.js' \) -print0)
+          exit $fail
