@@ -19,7 +19,7 @@ sudo chmod 770 "$WEBROOT/tmp"
 sudo chown -R pi:www-data "$WEBROOT/tmp"
 sudo find "$WEBROOT/tmp" -type f -name ".*" -exec chmod 600 {} \;
 
-# Punkt-Skripte ausführbar machen (punkt0.sh bis punkt16.sh)
+# Punkt-Skripte ausführbar machen (punkt0.sh bis punkt19.sh)
 sudo find "$WEBROOT" -type f -name "punkt*.sh" -exec chmod +x {} \;
 
 # WLAN- und Samba-Hilfsskripte

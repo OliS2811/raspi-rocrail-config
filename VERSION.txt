@@ -1,6 +1,17 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2026-08-21
+Stand: 2026-08-24
 
+Rocrail PiOS – Version 1.8
+Stand: 2026-08-24
+
+Diese Version enthält:
+- Automatischer Plan‑Änderungsverlauf: plan.xml wird beim Stoppen von Rocrail (Punkt 3) sowie vor Neustart (Punkt 8) und Herunterfahren (Punkt 16) automatisch lokal versioniert
+- Neue Karte "Planänderungen" im Webinterface zeigt die Historie und erlaubt eine kurze Notiz pro Änderung (z. B. "Signal an Gleis 3 hinzugefügt")
+- Frühere Plan‑Versionen lassen sich per Klick wiederherstellen, solange Rocrail gestoppt ist
+- Läuft komplett lokal ohne Internetverbindung und ohne Git‑Kenntnisse
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.7
 Stand: 2026-08-21
 
