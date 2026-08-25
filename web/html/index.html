@@ -228,6 +228,12 @@ function runScript(punkt) {
   });
 }
 
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function loadPlanHistory() {
   const list = document.getElementById('planHistoryList');
   fetch('run.php', {
@@ -247,8 +253,8 @@ function loadPlanHistory() {
         return;
       }
       const parts = line.split('|');
-      if (parts.length === 3) {
-        entries.push({ hash: parts[0], date: parts[1], note: parts[2] });
+      if (parts.length >= 3) {
+        entries.push({ hash: parts[0], date: parts[1], note: parts[2], elements: parts[3] || '' });
       }
     });
 
@@ -263,8 +269,11 @@ function loadPlanHistory() {
     }
     html += '<ul class="list-unstyled mb-0">';
     entries.forEach(e => {
+      const elementsLine = e.elements
+        ? `<div class="text-muted small">Geändert: ${escapeHtml(e.elements.split(',').join(', '))}</div>`
+        : '';
       html += `<li class="d-flex justify-content-between align-items-center border-bottom py-1">
-        <span><strong>${e.date}</strong> – ${e.note}</span>
+        <span><strong>${escapeHtml(e.date)}</strong> – ${escapeHtml(e.note)}${elementsLine}</span>
         <button class="btn btn-sm btn-outline-secondary" ${rocrailRunning ? 'disabled' : ''} onclick="restorePlanVersion('${e.hash}')">Wiederherstellen</button>
       </li>`;
     });
@@ -400,11 +409,11 @@ document.getElementById('sambaForm').addEventListener('submit', function (e) {
 // Rocweb Live-Vorschau prüfen und ggf. anzeigen
 const rocwebPreview = document.getElementById("rocweb-preview-container");
 
-fetch("http://rocweb.lan:8080", { method: "HEAD", mode: "no-cors" })
+fetch("http://rocrail.lan:8080", { method: "HEAD", mode: "no-cors" })
   .then(() => {
     rocwebPreview.innerHTML = `
       <h5>🛤️ Mini-Stellpult (Live-Vorschau)</h5>
-      <iframe src="http://rocweb.lan:8080"
+      <iframe src="http://rocrail.lan:8080"
               width="100%" height="400"
               style="border:1px solid #ccc; border-radius:8px;"></iframe>
       <p class="text-success small mt-2">
@@ -417,7 +426,7 @@ fetch("http://rocweb.lan:8080", { method: "HEAD", mode: "no-cors" })
       <p class="text-danger">
         ⚠️ Rocweb-Webserver ist nicht erreichbar.<br>
         Bitte stelle sicher, dass Rocrail auf Port <strong>8080</strong> läuft.<br>
-        Manuell testen: <a href="http://rocweb.lan:8080" target="_blank">http://rocweb.lan:8080/</a>
+        Manuell testen: <a href="http://rocrail.lan:8080" target="_blank">http://rocrail.lan:8080/</a>
       </p>
     `;
   });

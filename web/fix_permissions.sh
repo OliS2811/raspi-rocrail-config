@@ -5,6 +5,9 @@ echo "[INFO] Setze Dateiberechtigungen für Rocrail-Webinterface..."
 # Webverzeichnis
 WEBROOT="/var/www/html"
 
+# Verzeichnis selbst muss für www-data (Apache) und pi (sudo-Ausführung) durchsuchbar sein
+sudo chmod 755 "$WEBROOT"
+
 # Besitzer setzen (alle Dateien dem Benutzer pi und Gruppe www-data zuweisen)
 sudo chown -R pi:www-data "$WEBROOT"
 
@@ -20,11 +23,14 @@ sudo chown -R pi:www-data "$WEBROOT/tmp"
 sudo find "$WEBROOT/tmp" -type f -name ".*" -exec chmod 600 {} \;
 
 # Punkt-Skripte ausführbar machen (punkt0.sh bis punkt19.sh)
-sudo find "$WEBROOT" -type f -name "punkt*.sh" -exec chmod +x {} \;
+# 755 statt +x: die Skripte laufen per "sudo -u pi", pi ist weder Besitzer noch
+# in der Gruppe www-data, braucht als "Andere" also auch Leserechte, sonst
+# scheitert schon das Einlesen der Shebang-Zeile mit "Permission denied".
+sudo find "$WEBROOT" -type f -name "punkt*.sh" -exec chmod 755 {} \;
 
 # Hilfsskripte für den Planänderungs-Verlauf
-sudo chmod +x "$WEBROOT/plan_commit.sh"
-sudo chmod +x "$WEBROOT/rocrail_stop.sh"
+sudo chmod 755 "$WEBROOT/plan_commit.sh"
+sudo chmod 755 "$WEBROOT/rocrail_stop.sh"
 
 # WLAN- und Samba-Hilfsskripte
 sudo chmod 755 /usr/local/bin/set_samba_pass.sh

@@ -11,7 +11,7 @@ if ($note === '') {
     exit;
 }
 
-$note = str_replace(["\r", "\n"], ' ', $note);
+$note = str_replace(["\r", "\n", "|"], ' ', $note);
 $filename = "/var/www/html/tmp/.plan_note";
 
 if (@file_put_contents($filename, $note) === false) {
