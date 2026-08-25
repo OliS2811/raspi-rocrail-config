@@ -125,7 +125,7 @@ Oder direkt per E-Mail an den Maintainer (siehe GitHub-Profil)
 
 ## 📜 Lizenz
 
-MIT License – freie Nutzung für private & kommerzielle Zwecke  
+MIT License – freie Nutzung für private Zwecke  
 (Siehe LICENSE im Repository)
 
 ---
