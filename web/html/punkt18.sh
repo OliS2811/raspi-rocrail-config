@@ -2,7 +2,7 @@
 # Ersetzt die automatische Zeitstempel-Nachricht der letzten Plansicherung
 # durch die vom Nutzer eingegebene Notiz (gleicher Sicherungspunkt bleibt erhalten).
 
-REPO="$HOME/Documents/Rocrail"
+source "$(dirname "$0")/rocrail_workdir.sh"
 NOTEFILE="/var/www/html/tmp/.plan_note"
 
 if [ ! -d "$REPO/.git" ]; then

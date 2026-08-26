@@ -3,7 +3,7 @@
 # Datei seit der letzten Sicherung verändert hat. Läuft komplett lokal,
 # ohne Internetverbindung und ohne Zutun des Nutzers.
 
-REPO="$HOME/Documents/Rocrail"
+source "$(dirname "$0")/rocrail_workdir.sh"
 PLAN="plan.xml"
 
 [ -f "$REPO/$PLAN" ] || exit 0

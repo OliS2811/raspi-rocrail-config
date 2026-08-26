@@ -1,6 +1,8 @@
 #!/bin/bash
 echo "[INFO] Starte Rocrail im aktuellen Benutzerverzeichnis..."
 
+echo "$HOME/Documents/Rocrail" > "$HOME/.rocrail_workdir"
+
 nohup "$HOME/Rocrail/bin/rocrail" -l "$HOME/Rocrail/bin" -w "$HOME/Documents/Rocrail" -img "$HOME/Documents/Rocrail/images" -f -pwr > /dev/null 2>&1 &
 sleep 2
 

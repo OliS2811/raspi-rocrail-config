@@ -1,7 +1,7 @@
 #!/bin/bash
 # Stellt eine frühere Version von plan.xml aus dem lokalen Git-Verlauf wieder her.
 
-REPO="$HOME/Documents/Rocrail"
+source "$(dirname "$0")/rocrail_workdir.sh"
 HASHFILE="/var/www/html/tmp/.plan_restore"
 
 if [ ! -d "$REPO/.git" ]; then

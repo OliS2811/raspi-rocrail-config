@@ -2,7 +2,7 @@
 # Zeigt die Historie der Planänderungen (plan.xml) aus dem lokalen Git-Verlauf,
 # inkl. einer lesbaren Kurzfassung, welche benannten Elemente sich geändert haben.
 
-REPO="$HOME/Documents/Rocrail"
+source "$(dirname "$0")/rocrail_workdir.sh"
 
 if [ ! -d "$REPO/.git" ]; then
   echo "[INFO] Noch keine Planänderungen erfasst."
@@ -24,7 +24,7 @@ git log --pretty=format:'%h|%ad|%s' --date=format:'%d.%m.%Y %H:%M' -n 50 -- plan
     DIFF=$(git show "${HASH}" -- plan.xml < /dev/null 2>/dev/null)
   fi
 
-  ELEMENTS=$(echo "$DIFF" | command grep -E '^[+-][^+-]' | command grep -oE 'name="[^"]*"' | sed -E 's/name="(.*)"/\1/' | sort -u | paste -sd, - )
+  ELEMENTS=$(echo "$DIFF" | command grep -E '^[+-][^+-]' | command grep -oE 'name="[^"]*"' | sed -E 's/name="(.*)"/\1/' | command grep -vE '^(plan\.xml)?$' | sort -u | paste -sd, - )
 
   echo "${HASH}|${DATE}|${NOTE}|${ELEMENTS}"
 done

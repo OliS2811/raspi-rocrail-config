@@ -20,7 +20,10 @@ if (@file_put_contents($filename, $note) === false) {
     exit;
 }
 
-chown($filename, 'pi');
-chmod($filename, 0600);
+// Keine chown() auf 'pi': www-data darf Dateien nicht an einen anderen
+// Nutzer übertragen (nur root darf das). punkt18.sh liest die Datei als
+// "pi" ohne Root-Eskalation, deshalb muss sie für alle lesbar bleiben -
+// unkritisch, da hier nur eine kurze Notiz drinsteht.
+chmod($filename, 0644);
 
 echo "OK";

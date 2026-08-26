@@ -1,6 +1,23 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2026-08-24
+Stand: 2026-08-26
 
+Rocrail PiOS – Version 1.8.1
+Stand: 2026-08-26
+
+Diese Version enthält:
+- Bugfix: Notiz‑Speichern und Wiederherstellen im Planänderungs‑Verlauf schlugen fehl,
+  weil PHP (www‑data) Übergabedateien nicht an den Benutzer "pi" übertragen darf
+- Bugfix: fix_permissions.sh hat bei jedem Lauf den Inhalt von tmp/ auf "pi" umgehängt und
+  dadurch für www‑data unschreibbar bzw. für pi unzugänglich gemacht
+- Bugfix: punkt*.sh waren im frisch gebauten Image nicht lesbar ("Permission denied"),
+  da chmod +x allein die von pi‑gen ererbten restriktiven Leserechte nicht behob
+- Planänderungen zeigen jetzt eine lesbare Kurzfassung, welche benannten Rocrail‑Elemente
+  sich geändert haben, statt nur "es hat sich was geändert"
+- Der Planänderungs‑Verlauf unterscheidet jetzt zwischen Wiki‑Demo und Benutzermodus:
+  jedes Arbeitsverzeichnis bekommt seinen eigenen, unabhängigen Verlauf
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.8
 Stand: 2026-08-24
 
