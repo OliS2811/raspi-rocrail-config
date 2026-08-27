@@ -1,6 +1,18 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2026-08-26
+Stand: 2026-08-27
 
+Rocrail PiOS – Version 1.9.1
+Stand: 2026-08-27
+
+Diese Version enthält:
+- index.php (veraltetes, unsicheres Duplikat-Menü ohne Planänderungs‑Verlauf o. ä.)
+  endgültig aus dem Repo entfernt - war in Version 1.7 nur aus dem pi‑gen‑Checkout
+  entfernt worden, blieb im eigentlichen Repo aber liegen
+- Planänderungs‑Liste im Webinterface hat jetzt eine feste Höhe mit eigenem
+  Scrollbalken, statt die ganze Seite bei vielen Einträgen in die Länge zu ziehen
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.9
 Stand: 2026-08-26
 
