@@ -1,6 +1,26 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-26
 
+Rocrail PiOS – Version 1.9
+Stand: 2026-08-26
+
+Diese Version enthält:
+- Bugfix: punkt1.sh (Rocrail installieren im Webinterface) nutzte noch die tote
+  wiki.rocrail.net‑URL, jetzt auf rocrail.online korrigiert (in 1.7 nur im
+  Terminal‑Menü gefixt, hier übersehen)
+- Bugfix: Menüpunkt 9 (Beenden) im Terminal‑Menü landete am lokalen Bildschirm
+  (ohne SSH) nicht in einer Shell, wodurch Autologin/getty die Sitzung sofort neu
+  startete - wirkte wie ein Neustart
+- README‑Hinweis ergänzt: Image ohne Anpassungen (kein eigener Benutzername)
+  auf die SD‑Karte schreiben, sonst passen Skript‑Pfade nicht mehr zusammen
+- Neu: Rocweb‑Mini‑Vorschau hat jetzt einen konfigurierbaren Port (statt fest
+  8080) sowie eine Lizenzprüfung (lic.dat im Rocrail‑Ordner) - ohne Lizenz erscheint
+  nur ein Hinweis statt eines nutzlosen Eingabefelds
+- Bugfix: Rocweb‑Erreichbarkeitsprüfung nutzte HTTP HEAD, das Rocrails eingebauter
+  Webserver nicht unterstützt ("unsupported file" im Rocrail‑Log) - jetzt GET
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.8.2
 Stand: 2026-08-26
 

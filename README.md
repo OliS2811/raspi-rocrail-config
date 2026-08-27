@@ -67,7 +67,8 @@ cd ~
 ## 📥 Installation
 
 1. Lade das passende `.img.xz`-File herunter (32- oder 64-bit)
-2. Schreibe das Image auf eine SD-Karte (z. B. mit [Raspberry Pi Imager](https://www.raspberrypi.com/software/))
+2. Schreibe das Image **ohne Anpassungen** auf eine SD-Karte (z. B. mit [Raspberry Pi Imager](https://www.raspberrypi.com/software/))
+   ⚠️ Wichtig: Im Raspberry Pi Imager **nicht** die Option "OS anpassen" (Zahnrad-Symbol) nutzen, um einen eigenen Benutzernamen, Hostnamen o. ä. zu vergeben! Das Image bringt bereits einen fertig eingerichteten Benutzer `pi` mit, auf den das komplette Menü und Webinterface fest eingestellt sind. Ein abweichender Benutzername führt dazu, dass Skripte und Pfade nicht mehr zusammenpassen und z. B. Rocrail/RocWeb nicht mehr richtig erreichbar ist.
 3. Starte den Pi – das Menü **und** das Webinterface sind sofort einsatzbereit
 4. Menüpunkt 0 „Ersteinrichtung“ oder direkt per Webinterface loslegen
 

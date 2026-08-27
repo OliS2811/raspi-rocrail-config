@@ -151,8 +151,21 @@
 
   <!-- Rocweb Mini-Preview -->
   <div class="card shadow-sm mt-4">
-    <div class="card-body" id="rocweb-preview-container">
-      <p class="text-muted">🔍 Prüfe Rocrail-Webserver-Verfügbarkeit…</p>
+    <div class="card-body">
+      <strong>🛤️ Rocweb Mini-Vorschau</strong>
+      <div id="rocwebLicenseCheck" class="text-muted small mt-2">🔍 Prüfe Rocweb-Lizenz…</div>
+
+      <div id="rocwebPortSection" style="display:none;">
+        <p class="text-muted small mb-2">
+          Falls in Rocrail unter „Eigenschaften → Dienste“ ein Webserver-Port eingestellt ist, hier eintragen
+          für eine Live-Vorschau des Stellpults.
+        </p>
+        <div class="d-flex gap-2 mb-2">
+          <input type="number" id="rocwebPortInput" class="form-control form-control-sm" style="max-width:140px" placeholder="Port, z. B. 8088" min="1" max="65535">
+          <button class="btn btn-sm btn-outline-primary" onclick="saveRocwebPort()">Speichern</button>
+        </div>
+        <div id="rocweb-preview-container"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -423,29 +436,88 @@ document.getElementById('sambaForm').addEventListener('submit', function (e) {
   .catch(err => statusEl.textContent = "❌ Netzwerkfehler: " + err);
 });
 
-// Rocweb Live-Vorschau prüfen und ggf. anzeigen
+// Rocweb Live-Vorschau: Port ist in Rocrail frei einstellbar (Standard: aus/0),
+// deshalb keinen festen Port raten, sondern vom Nutzer eintragen lassen.
 const rocwebPreview = document.getElementById("rocweb-preview-container");
+const rocwebPortInput = document.getElementById("rocwebPortInput");
 
-fetch("http://rocrail.lan:8080", { method: "HEAD", mode: "no-cors" })
-  .then(() => {
-    rocwebPreview.innerHTML = `
-      <h5>🛤️ Mini-Stellpult (Live-Vorschau)</h5>
-      <iframe src="http://rocrail.lan:8080"
-              width="100%" height="400"
-              style="border:1px solid #ccc; border-radius:8px;"></iframe>
-      <p class="text-success small mt-2">
-        ✅ Rocweb-Webserver läuft auf Port <strong>8080</strong>.
-      </p>
-    `;
+function checkRocwebPort(port) {
+  const url = `http://${window.location.hostname}:${port}`;
+  rocwebPreview.innerHTML = '<p class="text-muted">🔍 Prüfe Rocweb-Verfügbarkeit…</p>';
+
+  // GET statt HEAD: Rocrails eingebauter Webserver unterstützt kein HEAD
+  // ("unsupported file: HEAD / HTTP/1.1" im Rocrail-Log) und liefert dem
+  // folgenden iframe-Request dann fälschlich "index.html not found".
+  fetch(url, { method: "GET", mode: "no-cors" })
+    .then(() => {
+      rocwebPreview.innerHTML = `
+        <iframe src="${url}" sandbox="allow-same-origin allow-scripts allow-forms"
+                width="100%" height="400"
+                style="border:1px solid #ccc; border-radius:8px;"></iframe>
+        <p class="text-success small mt-2">
+          ✅ Rocweb-Webserver läuft auf Port <strong>${port}</strong>.
+        </p>
+      `;
+    })
+    .catch(() => {
+      rocwebPreview.innerHTML = `
+        <p class="text-danger">
+          ⚠️ Unter Port <strong>${port}</strong> ist kein Rocweb-Webserver erreichbar.<br>
+          Manuell testen: <a href="${url}" target="_blank">${url}/</a>
+        </p>
+      `;
+    });
+}
+
+function saveRocwebPort() {
+  const port = rocwebPortInput.value.trim();
+  if (port === '') { return; }
+
+  fetch('save_rocweb_port.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ port: port })
   })
-  .catch(() => {
-    rocwebPreview.innerHTML = `
-      <p class="text-danger">
-        ⚠️ Rocweb-Webserver ist nicht erreichbar.<br>
-        Bitte stelle sicher, dass Rocrail auf Port <strong>8080</strong> läuft.<br>
-        Manuell testen: <a href="http://rocrail.lan:8080" target="_blank">http://rocrail.lan:8080/</a>
-      </p>
-    `;
+  .then(response => response.text())
+  .then(data => {
+    if (data.trim() === 'OK') {
+      checkRocwebPort(port);
+    } else {
+      alert(data);
+    }
+  })
+  .catch(() => alert('Port konnte nicht gespeichert werden.'));
+}
+
+// Rocweb braucht einen Unterstützerschlüssel (lic.dat im Rocrail-Ordner) -
+// ohne den bringt die Vorschau nichts, also erst prüfen statt den Nutzer mit
+// einem Eingabefeld zu verwirren, das sowieso nicht funktionieren kann.
+fetch('run.php', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: 'punkt=20'
+})
+  .then(response => response.text())
+  .then(result => {
+    const licenseCheck = document.getElementById('rocwebLicenseCheck');
+    if (result.includes('LIZENZ_OK')) {
+      licenseCheck.style.display = 'none';
+      document.getElementById('rocwebPortSection').style.display = 'block';
+
+      fetch('get_rocweb_port.php')
+        .then(response => response.text())
+        .then(port => {
+          port = port.trim();
+          if (port !== '') {
+            rocwebPortInput.value = port;
+            checkRocwebPort(port);
+          } else {
+            rocwebPreview.innerHTML = '<p class="text-muted small">Noch kein Port eingetragen – siehe Hinweis oben.</p>';
+          }
+        });
+    } else {
+      licenseCheck.innerHTML = 'ℹ️ Hier würde eine Live-Vorschau des Stellpults erscheinen, sobald ein Rocweb-Unterstützerschlüssel (<code>lic.dat</code> im Rocrail-Ordner) vorliegt.';
+    }
   });
 </script>
 </body>

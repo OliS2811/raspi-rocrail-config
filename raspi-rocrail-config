@@ -283,13 +283,15 @@ EOF
 
     9)
       echo "[INFO] Menü beendet."
-
+      echo "[HINWEIS] Sie befinden sich jetzt in der Kommandozeile."
       if [ -n "$SSH_TTY" ]; then
-        echo "[HINWEIS] Sie befinden sich jetzt in der Kommandozeile."
-        echo "[HINWEIS] Mit 'exit' oder STRG+D beenden Sie PuTTY."
-        bash --noprofile --norc
+        echo "[HINWEIS] Mit 'exit' oder STRG+D beenden Sie die SSH-Verbindung."
       fi
-
+      # Ohne diese Bash würde .bashrc's "exec bash raspi-rocrail-config" die
+      # Login-Shell komplett ersetzen - der Prozess endet einfach, was am
+      # lokalen Bildschirm (kein SSH) wie ein Neustart wirkt, weil
+      # Autologin/getty die Sitzung sofort neu startet.
+      bash --noprofile --norc
       break
       ;;
     10)
