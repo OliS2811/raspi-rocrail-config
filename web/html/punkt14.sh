@@ -1,8 +1,19 @@
+#!/bin/bash
 echo ""
 echo -e "\e[1mSamba installieren und konfigurieren …\e[0m"
 echo ""
 sudo apt-get update
 sudo apt-get install -y samba
+
+echo ""
+echo -e "\e[1mEntferne Debian-Standardfreigaben (Drucker, Benutzer-Homeverzeichnisse) …\e[0m"
+# [homes] erscheint beim anonymen Durchsuchen als Freigabe "nobody" (Debians
+# Standard-Gastkonto), [printers]/[print$] sind Drucker-Freigaben - beides
+# unerwünscht, da es hier nur um die Rocrail-Freigaben geht.
+sudo sed -i '/^\[homes\]/,/^$/ s/^/#/' /etc/samba/smb.conf
+sudo sed -i '/^\[printers\]/,/^$/ s/^/#/' /etc/samba/smb.conf
+sudo sed -i '/^\[print\$\]/,/^$/ s/^/#/' /etc/samba/smb.conf
+
 echo ""
 echo -e "\e[1mKonfiguriere /etc/samba/smb.conf …\e[0m"
 echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null

@@ -1,6 +1,20 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-26
 
+Rocrail PiOS – Version 1.8.2
+Stand: 2026-08-26
+
+Diese Version enthält:
+- Live‑Ausgabe im Webinterface: lange Läufe (Samba‑Installation, Updates) zeigen jetzt laufend
+  Fortschritt an, statt minutenlang nur den Spinner - vorher kam die komplette Ausgabe erst
+  am Ende auf einmal an
+- Samba‑Einrichtung (Punkt 14) entfernt jetzt die Debian‑Standardfreigaben (Drucker,
+  Benutzer‑Homeverzeichnisse), sodass nur noch die Rocrail‑Freigaben sichtbar sind
+- Notiz‑Abfrage im Planänderungs‑Verlauf umformuliert, da nicht jeder Rocrail‑Stopp
+  eine echte Planänderung bedeutet
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.8.1
 Stand: 2026-08-26
 

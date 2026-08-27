@@ -136,7 +136,7 @@
       <p class="text-muted small mb-2">Jedes Mal, wenn Rocrail über dieses Menü gestoppt wird, wird der aktuelle Plan hier automatisch gesichert.</p>
 
       <div id="planNoteBox" class="alert alert-warning py-2 px-3" style="display:none;">
-        <div class="mb-1">Was hast du gerade am Plan geändert?</div>
+        <div class="mb-1">Hast du Änderungen an deinem Plan gemacht? Dann trage sie hier ein und speichere sie.</div>
         <div class="d-flex gap-2">
           <input type="text" id="planNoteInput" class="form-control form-control-sm" placeholder="z. B. Signal an Gleis 3 hinzugefügt">
           <button class="btn btn-sm btn-success" onclick="savePlanNote()">Speichern</button>
@@ -203,24 +203,41 @@ function runScript(punkt) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'punkt=' + punkt
   })
-  .then(response => response.text())
-  .then(data => {
-    showSpinner(false);
-    if (data.trim() === '[RELOAD]') {
-      output.innerHTML = "<span style='color: green;'>🔄 Seite wird neu geladen...</span>";
-      setTimeout(() => location.reload(true), 1500);
-      return;
+  .then(response => {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+
+    function readChunk() {
+      return reader.read().then(({ done, value }) => {
+        if (done) {
+          showSpinner(false);
+
+          if (fullText.trim() === '[RELOAD]') {
+            output.innerHTML = "<span style='color: green;'>🔄 Seite wird neu geladen...</span>";
+            setTimeout(() => location.reload(true), 1500);
+            return;
+          }
+
+          output.innerHTML = fullText.replace('[PLAN_CHANGED]', '');
+          setTimeout(() => { output.innerHTML = ""; }, 30000);
+
+          if (punkt === 3) {
+            if (fullText.includes('[PLAN_CHANGED]')) {
+              document.getElementById('planNoteBox').style.display = 'block';
+            }
+            loadPlanHistory();
+          }
+          return;
+        }
+
+        fullText += decoder.decode(value, { stream: true });
+        output.innerHTML = fullText.replace('[RELOAD]', '').replace('[PLAN_CHANGED]', '');
+        return readChunk();
+      });
     }
 
-    output.innerHTML = data.replace('[PLAN_CHANGED]', '');
-    setTimeout(() => { output.innerHTML = ""; }, 30000);
-
-    if (punkt === 3) {
-      if (data.includes('[PLAN_CHANGED]')) {
-        document.getElementById('planNoteBox').style.display = 'block';
-      }
-      loadPlanHistory();
-    }
+    return readChunk();
   })
   .catch(error => {
     showSpinner(false);
