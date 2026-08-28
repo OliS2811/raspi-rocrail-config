@@ -1,7 +1,8 @@
 #!/bin/bash
 echo "[INFO] Backup wird erstellt..."
 
-SRC="$HOME/Documents/Rocrail"
+source "$(dirname "$0")/rocrail_workdir.sh"
+SRC="$REPO"
 DEFAULT_DEST="$HOME/Backups"
 LOGFILE="$DEFAULT_DEST/backup.log"
 DATE=$(date +'%Y-%m-%d_%H-%M')

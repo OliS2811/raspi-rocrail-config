@@ -29,7 +29,7 @@
       border-radius: 10px;
     }
     .btn-menu {
-      min-width: 330px;
+      width: 100%;
       text-align: left;
       font-family: monospace;
       margin-bottom: 10px;
@@ -39,6 +39,8 @@
       background: #181a20;
       color: #8cffb5;
       min-height: 80px;
+      max-height: 400px;
+      overflow-y: auto;
       padding: 18px;
       border-radius: 8px;
       margin-top: 12px;
@@ -47,7 +49,7 @@
       white-space: pre-wrap;
     }
     @media (max-width: 600px) {
-      .btn-menu { min-width: 160px; font-size: 0.97em;}
+      .btn-menu { font-size: 0.97em;}
     }
   </style>
 </head>
@@ -59,7 +61,14 @@
   <p class="lead text-secondary">Steuere deinen Rocrail-Raspberry jetzt noch bequemer!</p>
 </div>
 
-<div class="container" style="max-width:700px">
+<div class="container" style="max-width:960px">
+
+  <div class="d-flex flex-wrap justify-content-center gap-3 small text-muted mb-3" id="statusStrip">
+    <span id="statusRocrail">🔍 …</span>
+    <span id="statusWlan">🔍 …</span>
+    <span id="statusDisk">🔍 …</span>
+    <span id="statusLastPlan">🔍 …</span>
+  </div>
 
   <div class="card shadow-sm">
     <div class="card-body">
@@ -104,7 +113,7 @@
       <div id="buttons" class="row g-2 mt-2">
         <div class="col-12 col-sm-6">
           <button class="btn btn-menu btn-outline-primary" onclick="runScript(0)"><b>0)</b> Den Raspi für Rocrail vorbereiten (Wichtig)</button>
-          <button class="btn btn-menu btn-outline-primary" onclick="runScript(1)"><b>1)</b> Rocrail installieren (architekturabhängig)</button>
+          <button class="btn btn-menu btn-outline-primary" onclick="installRocrail()"><b>1)</b> Rocrail installieren (architekturabhängig)</button>
           <button class="btn btn-menu btn-outline-primary" onclick="runScript(2)"><b>2)</b> Rocrail starten</button>
           <button class="btn btn-menu btn-outline-primary" onclick="runScript(3)"><b>3)</b> Rocrail stoppen</button>
           <button class="btn btn-menu btn-outline-primary" onclick="runScript(4)"><b>4)</b> Rocrail Status anzeigen</button>
@@ -149,6 +158,17 @@
     </div>
   </div>
 
+  <!-- Backups -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <strong>💾 Backups</strong>
+      <p class="text-muted small mb-2">Über Punkt 5 erstellte Sicherungen. Wiederherstellen geht nur, wenn Rocrail gestoppt ist.</p>
+      <div id="backupList" class="small" style="max-height: 300px; overflow-y: auto;">
+        <span class="text-muted">🔍 Lade Backups…</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Rocweb Mini-Preview -->
   <div class="card shadow-sm mt-4">
     <div class="card-body">
@@ -188,7 +208,24 @@ fetch('wlan_status.php')
     if (statusEl && status.length > 0) {
       statusEl.textContent = status;
     }
+    const stripEl = document.getElementById("statusWlan");
+    if (stripEl && status.length > 0) {
+      stripEl.textContent = status;
+    }
   });
+
+// Status-Streifen oben: Rocrail-Status + freier Speicherplatz
+fetch('status_summary.php')
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('statusRocrail').textContent = data.rocrail_running
+      ? '🚂 Rocrail läuft'
+      : '🚂 Rocrail gestoppt';
+    document.getElementById('statusDisk').textContent = data.disk_free_gb !== null
+      ? `🗄️ ${data.disk_free_gb} GB frei`
+      : '';
+  })
+  .catch(() => {});
 
 // Samba-Box einblenden wenn installiert
 fetch('samba_check.php')
@@ -201,9 +238,30 @@ fetch('samba_check.php')
 
 // Planänderungen laden
 loadPlanHistory();
+loadBackupList();
 
 function showSpinner(show=true) {
   document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
+}
+
+// Verhindert versehentliches Überschreiben einer bestehenden Installation
+let rocrailAlreadyInstalled = false;
+fetch('run.php', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: 'punkt=21'
+})
+  .then(response => response.text())
+  .then(result => { rocrailAlreadyInstalled = result.includes('INSTALLIERT') && !result.includes('NICHT_INSTALLIERT'); })
+  .catch(() => {});
+
+function installRocrail() {
+  if (rocrailAlreadyInstalled) {
+    if (!confirm('Rocrail ist bereits installiert. Trotzdem neu installieren? Die bestehende Installation wird dabei überschrieben.')) {
+      return;
+    }
+  }
+  runScript(1);
 }
 
 function runScript(punkt) {
@@ -233,6 +291,7 @@ function runScript(punkt) {
           }
 
           output.innerHTML = fullText.replace('[PLAN_CHANGED]', '');
+          output.scrollTop = output.scrollHeight;
           setTimeout(() => { output.innerHTML = ""; }, 30000);
 
           if (punkt === 3) {
@@ -244,8 +303,12 @@ function runScript(punkt) {
           return;
         }
 
-        fullText += decoder.decode(value, { stream: true });
+        // ANSI-Terminalcodes (z.B. \e[1m für Fettschrift) rausfiltern - die
+        // sind fürs Terminal gedacht, im Browser bleiben sonst nur die
+        // rohen Escape-Sequenzen als Text sichtbar.
+        fullText += decoder.decode(value, { stream: true }).replace(/\x1b\[[0-9;]*m/g, '');
         output.innerHTML = fullText.replace('[RELOAD]', '').replace('[PLAN_CHANGED]', '');
+        output.scrollTop = output.scrollHeight;
         return readChunk();
       });
     }
@@ -287,6 +350,13 @@ function loadPlanHistory() {
         entries.push({ hash: parts[0], date: parts[1], note: parts[2], elements: parts[3] || '' });
       }
     });
+
+    const stripEl = document.getElementById('statusLastPlan');
+    if (stripEl) {
+      stripEl.textContent = entries.length > 0
+        ? `📜 Letzte Planänderung: ${entries[0].date}`
+        : '📜 Noch keine Planänderung';
+    }
 
     if (entries.length === 0) {
       list.innerHTML = '<span class="text-muted">Noch keine Planänderungen erfasst – wird automatisch angelegt, sobald Rocrail das erste Mal über Punkt 3 gestoppt wird.</span>';
@@ -366,6 +436,72 @@ function restorePlanVersion(hash) {
   .then(response => response.text())
   .then(result => {
     document.getElementById('output').innerHTML = result;
+    loadPlanHistory();
+  })
+  .catch(() => alert('Wiederherstellung fehlgeschlagen.'));
+}
+
+function loadBackupList() {
+  const list = document.getElementById('backupList');
+  fetch('run.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'punkt=22'
+  })
+  .then(response => response.text())
+  .then(text => {
+    const lines = text.trim().split('\n').filter(l => l.trim() !== '');
+    const entries = [];
+    lines.forEach(line => {
+      const parts = line.split('|');
+      if (parts.length === 4) {
+        entries.push({ path: parts[0], date: parts[1], size: parts[2], ort: parts[3] });
+      }
+    });
+
+    if (entries.length === 0) {
+      list.innerHTML = '<span class="text-muted">Noch keine Backups vorhanden – über Punkt 5 erstellen.</span>';
+      return;
+    }
+
+    let html = '<ul class="list-unstyled mb-0">';
+    entries.forEach(e => {
+      html += `<li class="d-flex justify-content-between align-items-center border-bottom py-1">
+        <span><strong>${escapeHtml(e.date)}</strong> – ${escapeHtml(e.size)}<div class="text-muted small">📍 ${escapeHtml(e.ort)}</div></span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="restoreBackup('${escapeHtml(e.path)}')">Wiederherstellen</button>
+      </li>`;
+    });
+    html += '</ul>';
+    list.innerHTML = html;
+  })
+  .catch(() => { list.innerHTML = '<span class="text-danger">Fehler beim Laden der Backups.</span>'; });
+}
+
+function restoreBackup(path) {
+  if (!confirm('Diesen Backup-Stand wiederherstellen? Rocrail muss dafür gestoppt sein. Der aktuelle Stand wird vorher automatisch gesichert.')) {
+    return;
+  }
+
+  fetch('save_backup_restore.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: path })
+  })
+  .then(response => response.text())
+  .then(data => {
+    if (data.trim() === 'OK') {
+      return fetch('run.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'punkt=23'
+      });
+    }
+    throw new Error(data);
+  })
+  .then(response => response.text())
+  .then(result => {
+    document.getElementById('output').innerHTML = result;
+    loadBackupList();
     loadPlanHistory();
   })
   .catch(() => alert('Wiederherstellung fehlgeschlagen.'));

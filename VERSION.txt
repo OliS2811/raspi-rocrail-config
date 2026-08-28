@@ -1,6 +1,32 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2026-08-27
+Stand: 2026-08-28
 
+Rocrail PiOS – Version 1.10
+Stand: 2026-08-28
+
+Diese Version enthält:
+- Neuer Status‑Streifen oben auf der Seite: Rocrail‑Status, WLAN, freier Speicherplatz
+  und letzte Planänderung auf einen Blick
+- Neu: Backups (Punkt 5) lassen sich jetzt direkt im Webinterface wiederherstellen -
+  mit Auswahl aus lokalen und USB‑Backups, Sicherheitsabfrage, automatischem
+  Sicherheits‑Backup vor dem Überschreiben und Sperre, solange Rocrail noch läuft
+- Bugfix: Punkt 1 (Rocrail installieren) meldete immer "erfolgreich", selbst wenn
+  Download oder Entpacken fehlschlugen - jetzt mit echter Erfolgsprüfung (Terminal‑
+  und Web‑Menü); zusätzlich Sicherheitsabfrage vor einer Neuinstallation, falls
+  Rocrail schon installiert ist
+- Bugfix: Hinweistext nach der Installation verwies auf den falschen Menüpunkt für
+  den Neustart (16 statt 8)
+- Bugfix: Punkt 5 (Backup) berücksichtigt jetzt das gerade aktive Arbeitsverzeichnis
+  (Wiki‑Demo oder Benutzermodus) statt immer ~/Documents/Rocrail zu sichern
+- ANSI‑Terminalcodes (Fettschrift etc.) werden aus der Web‑Ausgabe rausgefiltert,
+  statt als rohe Escape‑Sequenzen sichtbar zu sein
+- Ausgabefenster begrenzt jetzt seine Höhe mit eigenem, automatisch mitlaufendem
+  Scrollbalken, statt die ganze Seite bei langen Läufen (Updates, Installation) in
+  die Länge zu ziehen
+- Seitenlayout verbreitert und Aktions‑Buttons an die Spaltenbreite angepasst
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.9.1
 Stand: 2026-08-27
 

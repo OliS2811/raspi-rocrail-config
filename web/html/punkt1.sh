@@ -13,7 +13,20 @@ fi
 
 mkdir -p "$HOME/Downloads/Rocrail"
 cd "$HOME/Downloads/Rocrail" || exit 1
-wget --no-check-certificate "$URL" -O Rocrail.zip
+
+if ! wget --no-check-certificate "$URL" -O Rocrail.zip; then
+  echo "[FEHLER] Download fehlgeschlagen. Bitte Internetverbindung prüfen."
+  echo "[FEHLER] URL: $URL"
+  exit 1
+fi
+
+# Prüfen, ob wirklich ein ZIP-Archiv heruntergeladen wurde (wget wertet auch
+# eine HTML-Fehlerseite als "Erfolg", wenn der Server z.B. 200 OK liefert)
+if ! unzip -tq Rocrail.zip > /dev/null 2>&1; then
+  echo "[FEHLER] Heruntergeladene Datei ist kein gültiges ZIP-Archiv."
+  echo "[FEHLER] Download vermutlich fehlgeschlagen oder URL nicht mehr gültig."
+  exit 1
+fi
 
 # Vorhandene startrocrail.sh sichern, falls sie existiert
 if [ -f "$HOME/Rocrail/startrocrail.sh" ]; then
@@ -21,7 +34,16 @@ if [ -f "$HOME/Rocrail/startrocrail.sh" ]; then
   cp "$HOME/Rocrail/startrocrail.sh" "$HOME/startrocrail_backup.sh"
 fi
 
-unzip -o Rocrail.zip -d "$HOME/Rocrail"
+if ! unzip -o Rocrail.zip -d "$HOME/Rocrail"; then
+  echo "[FEHLER] Entpacken fehlgeschlagen."
+  exit 1
+fi
+
+if [ ! -f "$HOME/Rocrail/bin/rocrail" ]; then
+  echo "[FEHLER] rocrail-Programmdatei fehlt nach dem Entpacken (${HOME}/Rocrail/bin/rocrail)."
+  exit 1
+fi
+
 chmod +x "$HOME/Rocrail/bin/rocrail"
 
 # Wiederherstellen, falls nötig
@@ -32,4 +54,4 @@ if [ -f "$HOME/startrocrail_backup.sh" ]; then
 fi
 
 echo "[OK] Rocrail erfolgreich installiert."
-echo "[HINWEIS] Bitte jetzt das System manuell neu starten, z. B. über Menüpunkt 16 (Neustart)."
+echo "[HINWEIS] Bitte jetzt das System manuell neu starten, z. B. über Menüpunkt 8 (System neu starten)."

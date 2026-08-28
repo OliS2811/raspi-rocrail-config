@@ -56,6 +56,8 @@ sudo chmod +x "$WEBROOT/save_plan_note.php"
 sudo chmod +x "$WEBROOT/save_plan_restore.php"
 sudo chmod +x "$WEBROOT/save_rocweb_port.php"
 sudo chmod +x "$WEBROOT/get_rocweb_port.php"
+sudo chmod +x "$WEBROOT/status_summary.php"
+sudo chmod +x "$WEBROOT/save_backup_restore.php"
 sudo chmod +x "$WEBROOT/run.php"
 
 # Eigentümer ggf. auf www-data setzen (optional, kann auch entfernt werden)
