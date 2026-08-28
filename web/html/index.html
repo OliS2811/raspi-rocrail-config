@@ -169,6 +169,24 @@
     </div>
   </div>
 
+  <!-- Webinterface-Update -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <strong>🔄 Webinterface aktualisieren</strong>
+      <p class="text-muted small mb-2">Prüft auf GitHub, ob eine neuere Version von Menü/Webinterface verfügbar ist. Passiert nur, wenn du es anstößt.</p>
+
+      <div id="updateCheckResult" class="mb-2"></div>
+      <button class="btn btn-sm btn-outline-primary mb-2" onclick="checkForUpdate()">Auf Updates prüfen</button>
+
+      <div id="webupdateBackupSection" style="display:none;">
+        <hr>
+        <strong class="small">Frühere Version wiederherstellen</strong>
+        <p class="text-muted small mb-2">Vor jedem Update wird automatisch der vorherige Stand gesichert.</p>
+        <div id="webupdateBackupList" class="small" style="max-height: 250px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Rocweb Mini-Preview -->
   <div class="card shadow-sm mt-4">
     <div class="card-body">
@@ -503,6 +521,149 @@ function restoreBackup(path) {
     document.getElementById('output').innerHTML = result;
     loadBackupList();
     loadPlanHistory();
+  })
+  .catch(() => alert('Wiederherstellung fehlgeschlagen.'));
+}
+
+function compareVersions(a, b) {
+  // > 0 wenn a neuer als b, 0 wenn gleich, < 0 wenn a älter
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const va = pa[i] || 0;
+    const vb = pb[i] || 0;
+    if (va !== vb) return va - vb;
+  }
+  return 0;
+}
+
+function checkForUpdate() {
+  const result = document.getElementById('updateCheckResult');
+  result.innerHTML = '<span class="text-muted">🔍 Prüfe auf Updates…</span>';
+
+  fetch('run.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'punkt=24'
+  })
+  .then(response => response.text())
+  .then(text => {
+    const lokalMatch = text.match(/LOKAL=(\S+)/);
+    const verfMatch = text.match(/VERFUEGBAR=(\S+)/);
+
+    if (!verfMatch) {
+      result.innerHTML = `<span class="text-danger">⚠️ Prüfung fehlgeschlagen:</span><pre class="small">${escapeHtml(text)}</pre>`;
+      return;
+    }
+
+    const lokal = lokalMatch ? lokalMatch[1] : 'unbekannt';
+    const verfuegbar = verfMatch[1];
+
+    if (lokal !== 'unbekannt' && compareVersions(verfuegbar, lokal) > 0) {
+      result.innerHTML = `
+        <p class="mb-1">Aktuelle Version: <strong>${escapeHtml(lokal)}</strong> – Verfügbar: <strong class="text-success">${escapeHtml(verfuegbar)}</strong></p>
+        <button class="btn btn-sm btn-success" onclick="applyUpdate()">Jetzt aktualisieren</button>
+      `;
+    } else {
+      result.innerHTML = `<p class="text-muted mb-0">Du bist auf dem neuesten Stand (Version ${escapeHtml(lokal)}).</p>`;
+    }
+
+    document.getElementById('webupdateBackupSection').style.display = 'block';
+    loadWebupdateBackupList();
+  })
+  .catch(() => { result.innerHTML = '<span class="text-danger">Fehler bei der Prüfung.</span>'; });
+}
+
+function applyUpdate() {
+  if (!confirm('Webinterface und Skripte jetzt aktualisieren? Der aktuelle Stand wird vorher automatisch gesichert.')) {
+    return;
+  }
+
+  const output = document.getElementById('output');
+  showSpinner(true);
+  output.innerHTML = "<span style='color: orange;'>Bitte warten...</span>";
+
+  fetch('run.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'punkt=25'
+  })
+  .then(response => response.text())
+  .then(result => {
+    showSpinner(false);
+    output.innerHTML = result;
+    output.scrollTop = output.scrollHeight;
+    checkForUpdate();
+  })
+  .catch(() => {
+    showSpinner(false);
+    output.innerHTML = "<span style='color:red;'>Fehler beim Update.</span>";
+  });
+}
+
+function loadWebupdateBackupList() {
+  const list = document.getElementById('webupdateBackupList');
+  list.innerHTML = '<span class="text-muted">🔍 Lade…</span>';
+
+  fetch('run.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'punkt=26'
+  })
+  .then(response => response.text())
+  .then(text => {
+    const lines = text.trim().split('\n').filter(l => l.trim() !== '');
+    const entries = [];
+    lines.forEach(line => {
+      const parts = line.split('|');
+      if (parts.length === 3) {
+        entries.push({ path: parts[0], date: parts[1], size: parts[2] });
+      }
+    });
+
+    if (entries.length === 0) {
+      list.innerHTML = '<span class="text-muted">Noch keine früheren Versionen gesichert.</span>';
+      return;
+    }
+
+    let html = '<ul class="list-unstyled mb-0">';
+    entries.forEach(e => {
+      html += `<li class="d-flex justify-content-between align-items-center border-bottom py-1">
+        <span><strong>${escapeHtml(e.date)}</strong> – ${escapeHtml(e.size)}</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="restoreWebupdateBackup('${escapeHtml(e.path)}')">Wiederherstellen</button>
+      </li>`;
+    });
+    html += '</ul>';
+    list.innerHTML = html;
+  })
+  .catch(() => { list.innerHTML = '<span class="text-danger">Fehler beim Laden.</span>'; });
+}
+
+function restoreWebupdateBackup(path) {
+  if (!confirm('Diesen vorherigen Webinterface-Stand wiederherstellen?')) {
+    return;
+  }
+
+  fetch('save_webupdate_restore.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: path })
+  })
+  .then(response => response.text())
+  .then(data => {
+    if (data.trim() === 'OK') {
+      return fetch('run.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'punkt=27'
+      });
+    }
+    throw new Error(data);
+  })
+  .then(response => response.text())
+  .then(result => {
+    document.getElementById('output').innerHTML = result;
+    loadWebupdateBackupList();
   })
   .catch(() => alert('Wiederherstellung fehlgeschlagen.'));
 }

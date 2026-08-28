@@ -1,6 +1,30 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-28
 
+Rocrail PiOS – Version 2.0
+Stand: 2026-08-28
+
+Diese Version enthält:
+- Neu: Webinterface und Menü-Skripte lassen sich jetzt direkt im Webinterface auf
+  GitHub‑Updates prüfen und aktualisieren - rein manuell ausgelöst, kein
+  automatischer Hintergrund‑Check
+- Vor jedem Update wird automatisch der aktuelle Stand gesichert, über "Frühere
+  Version wiederherstellen" jederzeit rückgängig zu machen
+- Das Update‑Skript überschreibt seinen eigenen Ordner (/var/www/html) - kopiert
+  sich dafür beim Start selbst nach /tmp und läuft von dort weiter, damit es sich
+  nicht mitten in der Ausführung selbst zerstört
+- Bugfix: Das Sicherheits‑Backup vor einem Update ließ PHP‑Dateien mit
+  restriktiven Rechten (z. B. run.php) unbemerkt aus, weil das Backup ohne
+  Root‑Rechte lief und diese Dateien nicht lesen konnte - jetzt mit
+  Vollständigkeitsprüfung, bevor überhaupt etwas überschrieben wird
+- Bugfix: Nach einer Wiederherstellung gehörten die Menü‑Skripte im
+  Home‑Verzeichnis root statt pi, wodurch ein späteres Update daran hätte
+  scheitern können
+- Alle Änderungen mit einem lokalen Test‑Repo UND live auf dem Pi (echter
+  Update‑ und Rollback‑Rundlauf mit sudo‑Rechten) verifiziert
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.10.1
 Stand: 2026-08-28
 

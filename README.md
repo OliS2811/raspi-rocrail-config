@@ -76,10 +76,13 @@ cd ~
 
 ---
 
-## 🔄 Menü/Webinterface aktualisieren (Git Pull)
+## 🔄 Menü/Webinterface aktualisieren
 
-**Menü oder Webinterface lassen sich jederzeit separat aktualisieren, ohne das Image neu zu flashen!**
+**Menü und Webinterface lassen sich jederzeit separat aktualisieren, ohne das Image neu zu flashen!**
 
+Ab Version 2.0 geht das direkt im Webinterface: Karte "🔄 Webinterface aktualisieren" → "Auf Updates prüfen". Passiert nur, wenn du es anstößt, kein automatischer Hintergrund-Check. Vor jedem Update wird automatisch der aktuelle Stand gesichert; über "Frühere Version wiederherstellen" lässt sich das jederzeit rückgängig machen.
+
+Alternativ manuell per Git:
 ```bash
 cd ~
 git clone https://github.com/OliS2811/raspi-rocrail-config.git

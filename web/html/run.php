@@ -1,5 +1,5 @@
 <?php
-$allowed = range(0, 23);
+$allowed = range(0, 27);
 $punkt = isset($_POST['punkt']) ? intval($_POST['punkt']) : -1;
 
 header("Content-Type: text/plain");
