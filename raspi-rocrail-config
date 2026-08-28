@@ -119,6 +119,18 @@ EOF
   ;;
  
     1)
+  if [ -f "$HOME/Rocrail/bin/rocrail" ]; then
+    read -p "[HINWEIS] Rocrail ist bereits installiert. Trotzdem neu installieren und die bestehende Installation überschreiben? (j/N): " ANTWORT
+    case "$ANTWORT" in
+      [jJ]) ;;
+      *)
+        echo "[INFO] Installation abgebrochen."
+        read -p "Weiter mit Enter..."
+        continue
+        ;;
+    esac
+  fi
+
   echo "[INFO] Rocrail wird installiert..."
   if [ "$ARCH" = "aarch64" ]; then
     URL="https://www.rocrail.online/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip"

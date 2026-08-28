@@ -1,6 +1,18 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-28
 
+Rocrail PiOS – Version 1.10.1
+Stand: 2026-08-28
+
+Diese Version enthält:
+- Terminal‑Menü: Punkt 1 (Rocrail installieren) fragt jetzt nach, bevor eine bestehende
+  Installation überschrieben wird (gleiches Sicherheitsniveau wie im Webinterface)
+- README‑Hinweis ergänzt: Neue Funktionen (Planänderungs‑Verlauf seit 1.8,
+  Backup‑Wiederherstellung seit 1.10) gibt es bisher nur im Webinterface, nicht im
+  Terminal‑Menü
+
+
+-------------------------------------
 Rocrail PiOS – Version 1.10
 Stand: 2026-08-28
 

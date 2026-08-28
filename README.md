@@ -47,6 +47,8 @@ Ab Version **1.7** steht ein modernes Webinterface zur Verfügung, erreichbar un
 Das Image funktioniert weiterhin **vollständig ohne Webinterface**.  
 Das klassische Startmenü **öffnet sich nach Login automatisch** auf dem lokalen Bildschirm oder der SSH Konsole.
 
+> ⚠️ **Hinweis:** Ab Version 1.8 wird die Weiterentwicklung neuer Funktionen auf das **Webinterface** fokussiert. Das Terminal-Menü erhält weiterhin wichtige Bugfixes, aber neue Funktionen wie der automatische Planänderungs-Verlauf (seit 1.8) oder die Backup-Wiederherstellung (seit 1.10) gibt es bisher **nur im Webinterface**. Wer die volle Funktionalität nutzen möchte, sollte das Webinterface bevorzugen.
+
 ### Menü manuell öffnen (falls benötigt)
 
 Falls das Menü einmal geschlossen wurde, kann es jederzeit per Konsole wieder geöffnet werden:
