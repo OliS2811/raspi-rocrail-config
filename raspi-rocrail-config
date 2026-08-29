@@ -427,6 +427,12 @@ EOF
   sudo apt-get install -y samba
   echo ""
   echo -e "\e[1mKonfiguriere /etc/samba/smb.conf …\e[0m"
+  # Falls dieser Menüpunkt schon einmal ausgeführt wurde: vorherige
+  # Rocrail-Freigaben entfernen, damit sie nicht bei jedem erneuten Lauf
+  # dupliziert werden.
+  sudo sed -i '/^\[Rocrail\]$/,/^$/d' /etc/samba/smb.conf
+  sudo sed -i '/^\[Rocrail-Documents\]$/,/^$/d' /etc/samba/smb.conf
+  sudo sed -i '/^\[Rocrail-Images\]$/,/^$/d' /etc/samba/smb.conf
   echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
   echo "[Rocrail]" | sudo tee -a /etc/samba/smb.conf > /dev/null
   echo "   path = /home/pi/Rocrail" | sudo tee -a /etc/samba/smb.conf > /dev/null

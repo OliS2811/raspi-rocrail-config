@@ -10,12 +10,34 @@ echo -e "\e[1mEntferne Debian-Standardfreigaben (Drucker, Benutzer-Homeverzeichn
 # [homes] erscheint beim anonymen Durchsuchen als Freigabe "nobody" (Debians
 # Standard-Gastkonto), [printers]/[print$] sind Drucker-Freigaben - beides
 # unerwünscht, da es hier nur um die Rocrail-Freigaben geht.
-sudo sed -i '/^\[homes\]/,/^$/ s/^/#/' /etc/samba/smb.conf
-sudo sed -i '/^\[printers\]/,/^$/ s/^/#/' /etc/samba/smb.conf
-sudo sed -i '/^\[print\$\]/,/^$/ s/^/#/' /etc/samba/smb.conf
+#
+# Nicht mit "sed .../^$/" auskommentieren: Debians Standard-[homes]-Block
+# enthält selbst eine echte Leerzeile, bei der ein bereichsbasiertes sed
+# viel zu früh aufhören würde. Die dahinter liegenden, dann unkommentiert
+# bleibenden Zeilen ("valid users = %S" u.a.) rutschen sonst in [global]
+# und blockieren dort z. B. jeden Zugriff auf die IPC$-Verwaltungsfreigabe
+# (Freigaben-Auflistung schlägt fehl, obwohl der direkte Zugriff auf die
+# echten Freigaben noch funktioniert). Stattdessen bis zur nächsten
+# Abschnittsmarkierung (auch auskommentierte wie ";[netlogon]") kommentieren.
+# "#?" vor den Abschnittsnamen macht das robust gegenüber einem bereits
+# (fehlerhaft) halb-auskommentierten [homes]-Block aus einem älteren Lauf
+# dieses Skripts - so heilt sich ein zuvor kaputter Stand beim erneuten
+# Ausführen automatisch.
+sudo awk '
+  BEGIN{skip=0}
+  /^#?\[homes\]/ || /^#?\[printers\]/ || /^#?\[print\$\]/ {skip=1}
+  skip && !/^#?\[homes\]/ && !/^#?\[printers\]/ && !/^#?\[print\$\]/ && /^[#;]?\[/ {skip=0}
+  skip && !/^#/ {sub(/^/,"#")}
+  {print}
+' /etc/samba/smb.conf > /tmp/smb.conf.awktmp && sudo mv /tmp/smb.conf.awktmp /etc/samba/smb.conf
 
 echo ""
 echo -e "\e[1mKonfiguriere /etc/samba/smb.conf …\e[0m"
+# Falls das Skript schon einmal gelaufen ist: vorherige Rocrail-Freigaben
+# entfernen, damit sie nicht bei jedem erneuten Lauf dupliziert werden.
+sudo sed -i '/^\[Rocrail\]$/,/^$/d' /etc/samba/smb.conf
+sudo sed -i '/^\[Rocrail-Documents\]$/,/^$/d' /etc/samba/smb.conf
+sudo sed -i '/^\[Rocrail-Images\]$/,/^$/d' /etc/samba/smb.conf
 echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "[Rocrail]" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "   path = /home/pi/Rocrail" | sudo tee -a /etc/samba/smb.conf > /dev/null
