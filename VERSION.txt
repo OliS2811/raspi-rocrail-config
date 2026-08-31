@@ -1,6 +1,26 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-31
 
+Rocrail PiOS – Version 2.02
+Stand: 2026-08-31
+
+Diese Version enthält:
+- Bugfix: Rocrail reagierte beim Stoppen (Punkt 3) kaum auf das normale
+  Beenden-Signal, sobald echte Hardware-Interfaces (z.B. Z21, GBM-Booster)
+  aktiv waren - jeder Stopp brauchte ein hartes Beenden nach 15-30 Sekunden.
+  Rocrail wird jetzt im Konsolen-Modus gestartet und über eine eigene Pipe
+  sauber mit seinem eingebauten "q"-Shutdown-Kommando beendet (sichert
+  rocrail.ini/Plan/occ.xml zuverlässiger als ein Signal); das harte Beenden
+  bleibt als Sicherheitsnetz (60 Sekunden) für den Fall, dass die
+  Konsole ausnahmsweise nicht reagiert
+- Bugfix: Der Planänderungs-Verlauf legte bei jedem Rocrail-Start einen
+  neuen Eintrag an, auch ohne echte Bearbeitung am Gleisplan - Rocrail
+  zählt beim Start-Selbsttest jede Weichenschaltung automatisch mit
+  (operated-Attribut), was fälschlich als Planänderung erkannt wurde.
+  Reine Zähler-Änderungen lösen jetzt keinen Verlaufseintrag mehr aus
+
+
+-------------------------------------
 Rocrail PiOS – Version 2.01
 Stand: 2026-08-31
 

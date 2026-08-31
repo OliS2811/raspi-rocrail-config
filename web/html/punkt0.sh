@@ -17,12 +17,19 @@ Arbeitsbereich="$HOME/Documents/Rocrail"
 if [ -n "$1" ]; then
   Arbeitsbereich="$1"
 fi
+echo "$Arbeitsbereich" > "$HOME/.rocrail_workdir"
 cd "$HOME/Rocrail" || exit 1
+# Konsolen-Pipe fuer sauberes Beenden, siehe rocrail_stop.sh
+FIFO="$HOME/.rocrail_console"
+rm -f "$FIFO"
+mkfifo "$FIFO"
+exec 3<>"$FIFO"
 nohup "$HOME/Rocrail/bin/rocrail" \
   -l "$HOME/Rocrail/bin" \
   -w "$Arbeitsbereich" \
   -img "$Arbeitsbereich/images" \
-  -f -pwr > /dev/null 2>&1 &
+  -f -pwr -console <&3 > /dev/null 2>&1 &
+exec 3<&-
 EOF
   chmod +x "$HOME/Rocrail/startrocrail.sh"
   echo "[OK] startrocrail.sh erstellt und ausführbar gemacht."

@@ -18,7 +18,23 @@ fi
 
 git add "$PLAN"
 
-if ! git diff --cached --quiet; then
-  git commit -q -m "Automatische Sicherung $(date '+%Y-%m-%d %H:%M')"
-  echo "[PLAN_CHANGED]"
+if git diff --cached --quiet; then
+  exit 0
 fi
+
+# Rocrail schaltet beim Start jedes Feld einmal durch (Selbsttest/Sync) und
+# zaehlt das im operated="..."-Attribut jeder Weiche mit - das allein ist
+# keine echte Planaenderung. Wenn der Unterschied zum letzten Commit
+# ausschliesslich aus diesen Zaehlern besteht, wird nicht committet.
+if git rev-parse --verify -q HEAD > /dev/null; then
+  if diff -q \
+      <(git show HEAD:"$PLAN" | sed -E 's/operated="[0-9]+"/operated="X"/g') \
+      <(sed -E 's/operated="[0-9]+"/operated="X"/g' "$PLAN") \
+      > /dev/null; then
+    git reset -q "$PLAN"
+    exit 0
+  fi
+fi
+
+git commit -q -m "Automatische Sicherung $(date '+%Y-%m-%d %H:%M')"
+echo "[PLAN_CHANGED]"
