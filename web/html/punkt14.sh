@@ -38,6 +38,13 @@ echo -e "\e[1mKonfiguriere /etc/samba/smb.conf …\e[0m"
 sudo sed -i '/^\[Rocrail\]$/,/^$/d' /etc/samba/smb.conf
 sudo sed -i '/^\[Rocrail-Documents\]$/,/^$/d' /etc/samba/smb.conf
 sudo sed -i '/^\[Rocrail-Images\]$/,/^$/d' /etc/samba/smb.conf
+sudo sed -i '/^\[Rocrail-Backups\]$/,/^$/d' /etc/samba/smb.conf
+sudo sed -i '/^\[Rocrail-WebinterfaceBackups\]$/,/^$/d' /etc/samba/smb.conf
+
+# Backup-Verzeichnisse existieren evtl. noch nicht (werden erst bei Punkt 5
+# bzw. beim ersten Webinterface-Update angelegt) - ohne sie zeigt die
+# Freigabe im Netzwerk nur einen Fehler statt eines leeren Ordners.
+mkdir -p "$HOME/Backups" "$HOME/WebinterfaceBackups"
 echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "[Rocrail]" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "   path = /home/pi/Rocrail" | sudo tee -a /etc/samba/smb.conf > /dev/null
@@ -59,6 +66,24 @@ echo "   valid users = pi" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "[Rocrail-Images]" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "   path = /home/pi/Documents/Rocrail/images" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   writeable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   only guest = no" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   create mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   directory mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   valid users = pi" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "[Rocrail-Backups]" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   path = /home/pi/Backups" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   writeable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   only guest = no" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   create mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   directory mask = 0775" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   valid users = pi" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "[Rocrail-WebinterfaceBackups]" | sudo tee -a /etc/samba/smb.conf > /dev/null
+echo "   path = /home/pi/WebinterfaceBackups" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "   writeable = yes" | sudo tee -a /etc/samba/smb.conf > /dev/null
 echo "   only guest = no" | sudo tee -a /etc/samba/smb.conf > /dev/null

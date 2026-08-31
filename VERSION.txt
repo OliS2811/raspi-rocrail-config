@@ -1,6 +1,18 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-31
 
+Rocrail PiOS – Version 2.04
+Stand: 2026-08-31
+
+Diese Version enthält:
+- Neu: Samba-Einrichtung (Punkt 14) gibt jetzt auch die Backup-Ordner frei -
+  "Rocrail-Backups" (~/Backups, die ZIP-Sicherungen aus Punkt 5) und
+  "Rocrail-WebinterfaceBackups" (~/WebinterfaceBackups, die automatischen
+  Sicherungen vor jedem Webinterface-Update) - Backups lassen sich damit
+  direkt im Netzwerk durchsuchen, ohne SSH/Terminal
+
+
+-------------------------------------
 Rocrail PiOS – Version 2.03
 Stand: 2026-08-31
 
