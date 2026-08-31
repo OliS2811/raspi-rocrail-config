@@ -1,7 +1,7 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-31
 
-Rocrail PiOS – Version 2.0.1
+Rocrail PiOS – Version 2.01
 Stand: 2026-08-31
 
 Diese Version enthält:
