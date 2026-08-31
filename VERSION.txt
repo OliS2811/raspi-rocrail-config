@@ -1,6 +1,23 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2026-08-28
+Stand: 2026-08-31
 
+Rocrail PiOS – Version 2.0.1
+Stand: 2026-08-31
+
+Diese Version enthält:
+- Bugfix: Samba-Freigaben-Einrichtung (Punkt 14) beendete die [homes]-Sektion in
+  smb.conf zu früh, wodurch "valid users = %S" unter [global] hängen blieb und
+  jede Freigaben-Auflistung mit NT_STATUS_ACCESS_DENIED scheiterte - sah wie
+  ein Netzwerkproblem aus, war aber ein Konfigurationsfehler
+- Bugfix: Mehrfaches Ausführen von Punkt 14 duplizierte die Rocrail-Freigaben,
+  da das Anhängen nicht idempotent war
+- Seite lädt jetzt automatisch neu, sobald sich der angezeigte Status ändern
+  könnte: nach WLAN-/Samba-Einrichtung, Setzen des Rocweb-Ports, Backup
+  erstellen sowie Rocrail starten/stoppen - vor allem die Rocweb-Mini-Vorschau
+  zeigte sonst weiterhin den alten Zustand
+
+
+-------------------------------------
 Rocrail PiOS – Version 2.0
 Stand: 2026-08-28
 

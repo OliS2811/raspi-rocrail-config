@@ -302,22 +302,27 @@ function runScript(punkt) {
         if (done) {
           showSpinner(false);
 
-          if (fullText.trim() === '[RELOAD]') {
-            output.innerHTML = "<span style='color: green;'>🔄 Seite wird neu geladen...</span>";
-            setTimeout(() => location.reload(true), 1500);
-            return;
-          }
-
-          output.innerHTML = fullText.replace('[PLAN_CHANGED]', '');
+          const shouldReload = fullText.includes('[RELOAD]');
+          const planChanged = fullText.includes('[PLAN_CHANGED]');
+          output.innerHTML = fullText.replace('[RELOAD]', '').replace('[PLAN_CHANGED]', '');
           output.scrollTop = output.scrollHeight;
-          setTimeout(() => { output.innerHTML = ""; }, 30000);
 
           if (punkt === 3) {
-            if (fullText.includes('[PLAN_CHANGED]')) {
+            if (planChanged) {
               document.getElementById('planNoteBox').style.display = 'block';
             }
             loadPlanHistory();
           }
+
+          // Bei Punkt 3 mit erkannter Planänderung nicht automatisch neu laden -
+          // sonst verschwindet die Notiz-Box, bevor der Nutzer sie ausfüllen kann.
+          if (shouldReload && !(punkt === 3 && planChanged)) {
+            output.innerHTML += "<br><span style='color: green;'>🔄 Seite wird neu geladen...</span>";
+            setTimeout(() => location.reload(true), 1500);
+            return;
+          }
+
+          setTimeout(() => { output.innerHTML = ""; }, 30000);
           return;
         }
 
@@ -689,7 +694,10 @@ document.getElementById('wlanForm').addEventListener('submit', function (e) {
         body: 'punkt=11'
       })
       .then(response => response.text())
-      .then(output => statusEl.textContent = output)
+      .then(output => {
+        statusEl.textContent = output + " 🔄 Seite wird neu geladen...";
+        setTimeout(() => location.reload(true), 1500);
+      })
       .catch(err => statusEl.textContent = "Fehler beim Ausführen.");
     } else {
       statusEl.textContent = "Fehler beim Speichern.";
@@ -724,7 +732,10 @@ document.getElementById('sambaForm').addEventListener('submit', function (e) {
         body: 'punkt=15'
       })
       .then(response => response.text())
-      .then(output => statusEl.textContent = "✅ " + output)
+      .then(output => {
+        statusEl.textContent = "✅ " + output + " 🔄 Seite wird neu geladen...";
+        setTimeout(() => location.reload(true), 1500);
+      })
       .catch(err => statusEl.textContent = "❌ Fehler beim Ausführen.");
     } else {
       statusEl.textContent = "❌ Fehler: " + data;
@@ -779,6 +790,7 @@ function saveRocwebPort() {
   .then(data => {
     if (data.trim() === 'OK') {
       checkRocwebPort(port);
+      setTimeout(() => location.reload(true), 1500);
     } else {
       alert(data);
     }

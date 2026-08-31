@@ -6,4 +6,5 @@ else
   echo "[INFO] Rocrail wird im Benutzer-Modus gestartet..."
   "$HOME/Rocrail/startrocrail.sh" "$HOME/Documents/Rocrail"
   echo "[OK] Benutzer-Modus gestartet."
+  echo "[RELOAD]"
 fi

@@ -53,3 +53,5 @@ if [ -n "$OLD" ]; then
 else
   echo "[INFO] Keine alten Backups (>30 Tage) in $DEST gefunden."
 fi
+
+echo "[RELOAD]"

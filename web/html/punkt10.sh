@@ -11,4 +11,5 @@ else
   cp -n "$HOME/Rocrail/wikidemo/plan.xml" "$DEMO_DIR/" 2>/dev/null
   "$HOME/Rocrail/startrocrail.sh" "$DEMO_DIR"
   echo "[OK] Demo-Modus gestartet."
+  echo "[RELOAD]"
 fi

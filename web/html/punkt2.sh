@@ -9,6 +9,7 @@ sleep 2
 pid=$(pgrep -x rocrail)
 if [ -n "$pid" ]; then
   echo "[OK] Rocrail gestartet (PID: $pid)."
+  echo "[RELOAD]"
 else
   echo "[FEHLER] Rocrail konnte nicht gestartet werden."
 fi
