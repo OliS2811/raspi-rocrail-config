@@ -22,14 +22,23 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
-# Rocrail schaltet beim Start jedes Feld einmal durch (Selbsttest/Sync) und
-# zaehlt das im operated="..."-Attribut jeder Weiche mit - das allein ist
-# keine echte Planaenderung. Wenn der Unterschied zum letzten Commit
-# ausschliesslich aus diesen Zaehlern besteht, wird nicht committet.
+# Rocrail schreibt beim Start/Stopp mehrere Laufzeit-Attribute automatisch
+# mit, die keine echte Planaenderung sind:
+# - operated="..."  Weichen-Schaltzaehler (Selbsttest beim Start)
+# - actor="..."     wer/was das Element zuletzt angefasst hat
+# - der Anzeigetext des Status-Feldes "tx_controller_state_power" (Power ON/OFF)
+# Wenn der Unterschied zum letzten Commit ausschliesslich aus diesen
+# Laufzeit-Werten besteht, wird nicht committet.
+normalize() {
+  sed -E \
+    -e 's/operated="[0-9]+"/operated="X"/g' \
+    -e 's/actor="[^"]*"/actor="X"/g' \
+    -e 's/(id="tx_controller_state_power"[^>]*text)="[^"]*"/\1="X"/'
+}
 if git rev-parse --verify -q HEAD > /dev/null; then
   if diff -q \
-      <(git show HEAD:"$PLAN" | sed -E 's/operated="[0-9]+"/operated="X"/g') \
-      <(sed -E 's/operated="[0-9]+"/operated="X"/g' "$PLAN") \
+      <(git show HEAD:"$PLAN" | normalize) \
+      <(normalize < "$PLAN") \
       > /dev/null; then
     git reset -q "$PLAN"
     exit 0

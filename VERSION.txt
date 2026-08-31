@@ -1,6 +1,20 @@
 Rocrail PiOS – Versionsverlauf
 Stand: 2026-08-31
 
+Rocrail PiOS – Version 2.03
+Stand: 2026-08-31
+
+Diese Version enthält:
+- Bugfix: Der operated-Zähler-Filter aus 2.02 reichte nicht aus - Rocrail
+  schreibt beim Start/Stopp noch mindestens zwei weitere Laufzeit-Werte
+  automatisch in plan.xml: das actor-Attribut (wer ein Element zuletzt
+  angefasst hat) und den Anzeigetext des Status-Feldes
+  "tx_controller_state_power" (Power ON/OFF). Beide lösten weiterhin
+  unnötige Einträge im Planänderungs-Verlauf aus. Werden jetzt zusätzlich
+  ignoriert, sofern sie die einzigen Unterschiede sind
+
+
+-------------------------------------
 Rocrail PiOS – Version 2.02
 Stand: 2026-08-31
 
