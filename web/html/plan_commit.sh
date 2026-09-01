@@ -36,6 +36,10 @@ fi
 # - locid="..."     welche Lok gerade in einem Block erkannt wird
 #                    (Belegtmelder-Neubewertung beim Start, keine Bearbeitung)
 # - der Anzeigetext des Status-Feldes "tx_controller_state_power" (Power ON/OFF)
+# - rocrailversion/rocrailrevision im Wurzelelement (welcher Rocrail-Build
+#   zuletzt gespeichert hat, aendert sich bei einem Rocrail-Update)
+# - load/loadmax/volt/voltmin/temp/tempmax in <booster>-Elementen (echte
+#   Live-Messwerte vom Booster: Strom, Spannung, Temperatur)
 # Wenn der Unterschied zum letzten Commit ausschliesslich aus diesen
 # Laufzeit-Werten besteht, wird nicht committet.
 normalize() {
@@ -43,7 +47,17 @@ normalize() {
     -e 's/operated="[0-9]+"/operated="X"/g' \
     -e 's/actor="[^"]*"/actor="X"/g' \
     -e 's/locid="[^"]*"/locid="X"/g' \
-    -e 's/(id="tx_controller_state_power"[^>]*text)="[^"]*"/\1="X"/'
+    -e 's/(id="tx_controller_state_power"[^>]*text)="[^"]*"/\1="X"/' \
+    -e 's/rocrailversion="[^"]*"/rocrailversion="X"/' \
+    -e 's/rocrailrevision="[^"]*"/rocrailrevision="X"/' \
+    -e '/<booster /{
+      s/load="[0-9]*"/load="X"/g
+      s/loadmax="[0-9]*"/loadmax="X"/g
+      s/volt="[0-9]*"/volt="X"/g
+      s/voltmin="[0-9]*"/voltmin="X"/g
+      s/temp="[0-9]*"/temp="X"/g
+      s/tempmax="[0-9]*"/tempmax="X"/g
+    }'
 }
 if git rev-parse --verify -q HEAD > /dev/null; then
   if diff -q \
