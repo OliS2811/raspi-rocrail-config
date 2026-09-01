@@ -1,6 +1,26 @@
 Rocrail PiOS – Versionsverlauf
-Stand: 2026-08-31
+Stand: 2026-09-01
 
+Rocrail PiOS – Version 2.05
+Stand: 2026-09-01
+
+Diese Version enthält:
+- Bugfix: Das Beenden von Rocrail (Punkt 3) über den Konsolen-Modus
+  (Version 2.02) sperrte RocViews eigenes "Rocrail und Rocview
+  beenden"-Menü. Zurück auf ein einfaches "kill"-Signal, wie von der
+  offiziellen Rocrail-Dokumentation für Linux empfohlen - Rocrail fängt
+  das selbst ab und sichert dabei rocrail.ini/Plan/occ.xml. RocViews
+  Shutdown-Menü bleibt dadurch nutzbar
+- Bugfix: Der Planänderungs-Verlauf löste weiterhin vereinzelt falsche
+  Einträge aus - zwei weitere automatisch mitgeschriebene Laufzeit-Werte
+  gefunden und gefiltert: actor (wer ein Element zuletzt angefasst hat)
+  und locid (welche Lok gerade in einem Block erkannt wird)
+- Neu: rocrail.ini (Zentralen-/Netzwerk-Konfiguration) wird jetzt bei
+  jeder echten Plansicherung automatisch mitversioniert, damit auch
+  Konfigurationsänderungen im Verlauf nachvollziehbar sind
+
+
+-------------------------------------
 Rocrail PiOS – Version 2.04
 Stand: 2026-08-31
 
