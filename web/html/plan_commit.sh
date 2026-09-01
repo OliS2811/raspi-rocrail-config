@@ -38,8 +38,13 @@ fi
 # - der Anzeigetext des Status-Feldes "tx_controller_state_power" (Power ON/OFF)
 # - rocrailversion/rocrailrevision im Wurzelelement (welcher Rocrail-Build
 #   zuletzt gespeichert hat, aendert sich bei einem Rocrail-Update)
-# - load/loadmax/volt/voltmin/temp/tempmax in <booster>-Elementen (echte
-#   Live-Messwerte vom Booster: Strom, Spannung, Temperatur)
+# - load/loadmax/volt/voltmin/temp/tempmax/power in <booster>-Elementen
+#   (echte Live-Messwerte vom Booster: Strom, Spannung, Temperatur, ob
+#   gerade Strom auf dem Gleis ist)
+# - state/identifier/counter/bididir in <fb>-Elementen (Rueckmelder):
+#   aktueller Belegtstatus und RailCom-Erkennungsdaten (welches Fahrzeug
+#   gerade per RailCom erkannt wird) - reine Live-Rueckmeldung, keine
+#   Planeigenschaft
 # Wenn der Unterschied zum letzten Commit ausschliesslich aus diesen
 # Laufzeit-Werten besteht, wird nicht committet.
 normalize() {
@@ -57,6 +62,13 @@ normalize() {
       s/voltmin="[0-9]*"/voltmin="X"/g
       s/temp="[0-9]*"/temp="X"/g
       s/tempmax="[0-9]*"/tempmax="X"/g
+      s/power="[^"]*"/power="X"/g
+    }' \
+    -e '/<fb /{
+      s/state="[^"]*"/state="X"/g
+      s/identifier="[^"]*"/identifier="X"/g
+      s/counter="[0-9]*"/counter="X"/g
+      s/bididir="[0-9]*"/bididir="X"/g
     }'
 }
 if git rev-parse --verify -q HEAD > /dev/null; then
